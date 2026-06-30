@@ -97,6 +97,14 @@ PATH="$TMP/download/bin:/usr/bin:/bin" bash "$ROOT/scripts/install-verified-down
   https://example.invalid/file deadbeef "$TMP/download/dest" >/dev/null 2>&1
 [ $? -ne 0 ] && [ "$(cat "$TMP/download/dest")" = keep ] &&
   ok "checksum mismatch preserves destination" || bad "checksum mismatch preserves destination"
+cat > "$TMP/download/bin/curl" <<'SH'
+#!/usr/bin/env bash
+exit 22
+SH
+PATH="$TMP/download/bin:/usr/bin:/bin" bash "$ROOT/scripts/install-verified-download.sh" \
+  https://example.invalid/file "$EXPECTED" "$TMP/download/dest" >/dev/null 2>&1
+[ $? -ne 0 ] && [ "$(cat "$TMP/download/dest")" = keep ] &&
+  ok "download failure preserves destination" || bad "download failure preserves destination"
 
 python3 - "$ROOT" <<'PY'
 import json
@@ -117,6 +125,29 @@ ingest = (root / "skills/wiki-ingest/SKILL.md").read_text()
 assert "shasum -a 256" in ingest and "command -v shasum" in ingest
 PY
 [ $? -eq 0 ] && ok "hook and skill contracts are complete" || bad "hook and skill contracts are complete"
+
+# A write deferred under a lock is committed after the final release.
+V="$TMP/commit"
+mkdir -p "$V/scripts" "$V/wiki" "$V/.raw"
+cp "$ROOT/scripts/wiki-lock.sh" "$ROOT/scripts/auto-commit-wiki.sh" "$V/scripts/"
+git -C "$V" init -q
+git -C "$V" config user.name Test
+git -C "$V" config user.email test@example.invalid
+touch "$V/wiki/.keep" "$V/.raw/.keep"
+git -C "$V" add .
+git -C "$V" commit -qm seed
+(
+  cd "$V" || exit
+  bash scripts/wiki-lock.sh acquire wiki/note.md
+  printf 'content\n' > wiki/note.md
+  bash scripts/auto-commit-wiki.sh
+  [ "$(git rev-list --count HEAD)" -eq 1 ] || exit 1
+  bash scripts/wiki-lock.sh release wiki/note.md
+  bash scripts/auto-commit-wiki.sh
+  [ "$(git rev-list --count HEAD)" -eq 2 ]
+)
+[ $? -eq 0 ] && ok "post-release helper completes deferred commit" ||
+  bad "post-release helper completes deferred commit"
 
 echo "Pass: $PASS  Fail: $FAIL"
 [ "$FAIL" -eq 0 ]

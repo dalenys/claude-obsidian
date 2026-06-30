@@ -14,6 +14,10 @@ if [ -x scripts/wiki-lock.sh ]; then
   [ -z "$LOCK_LIST" ] || exit 0
 fi
 git add -- wiki/ .raw/ .vault-meta/ 2>/dev/null || exit 0
-git diff --cached --quiet -- wiki/ .raw/ .vault-meta/ ||
-  git commit -m "wiki: auto-commit $(date '+%Y-%m-%d %H:%M')" \
-    -- wiki/ .raw/ .vault-meta/ 2>/dev/null || true
+STAGED=()
+while IFS= read -r -d '' path; do
+  STAGED+=("$path")
+done < <(git diff --cached --name-only -z -- wiki/ .raw/ .vault-meta/)
+[ ${#STAGED[@]} -gt 0 ] || exit 0
+git commit -m "wiki: auto-commit $(date '+%Y-%m-%d %H:%M')" \
+  -- "${STAGED[@]}" 2>/dev/null || true
