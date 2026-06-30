@@ -39,7 +39,7 @@
 #   list
 #     - Prints currently-held lock records (one per line: pid age path).
 #   clear-stale [--max-age N]
-#     - Removes lockfiles whose PID is dead OR whose age > N seconds.
+#     - Removes lockfiles whose age > N seconds. PIDs are informational only.
 #       Default N = 3600 (1h). Returns count removed via stdout.
 #       (The N=3600 default is intentionally generous because clear-stale
 #       is admin-grade cleanup, distinct from the per-acquire age threshold.)
@@ -126,7 +126,7 @@ validate_path() {
   # LOCK_DIR, not the path itself. We resolve via python3 (portable across
   # GNU coreutils + macOS BSD where realpath flag semantics differ).
   if command -v python3 >/dev/null 2>&1; then
-    local resolved root
+    local resolved
     resolved=$(VAULT_ROOT_BASH="$VAULT_ROOT" P_BASH="$p" python3 -c '
 import os, sys
 root = os.path.realpath(os.environ["VAULT_ROOT_BASH"])
@@ -142,20 +142,44 @@ sys.stdout.write("INSIDE" if common == root else "OUTSIDE")
 
 now_epoch() { date +%s; }
 
-is_alive() {
-  # kill -0 returns 0 if process exists and we can signal it
-  kill -0 "$1" 2>/dev/null
-}
-
 # Atomic meta-lock wrapper. Funcs that mutate LOCK_DIR call under this lock so
 # acquire/release/clear-stale don't race against each other.
 with_meta_lock() {
   ensure_dirs
-  # Use flock under bash's redirect; meta lock is short-lived per command.
-  (
-    flock -x -w 5 9 || die "could not acquire meta-lock within 5s" 1
-    "$@"
-  ) 9>"$META_LOCK"
+  if command -v flock >/dev/null 2>&1; then
+    # flock auto-releases when fd 9 closes on subshell exit.
+    (
+      flock -x -w 5 9 || die "could not acquire meta-lock within 5s" 1
+      "$@"
+    ) 9>"$META_LOCK"
+  else
+    # mkdir is atomic on POSIX filesystems: exactly one racer wins the create.
+    local mutex="${META_LOCK}.d"
+    local deadline=$(( $(date +%s) + 5 ))
+    until mkdir "$mutex" 2>/dev/null; do
+      # Reap a mutex dir abandoned by a crashed holder (older than 1 minute).
+      # TOCTOU note: a holder could release and a new racer re-acquire between this
+      # age check and the rmdir, reaping a fresh lock. Window is sub-millisecond and
+      # requires a >60s-old holder releasing in the exact gap; acceptable under the
+      # single-tenant threat model (same trade-off as the per-file clear-stale path).
+      if [ -n "$(find "$mutex" -maxdepth 0 -mmin +1 2>/dev/null)" ]; then
+        rmdir "$mutex" 2>/dev/null || true
+        continue
+      fi
+      [ "$(date +%s)" -ge "$deadline" ] && die "could not acquire meta-lock within 5s" 1
+      sleep 0.2
+    done
+    # Release on abnormal exit (a signal landing between mkdir and the explicit
+    # rmdir below), mirroring allocate-address.sh. The value is expanded into the
+    # trap now because $mutex is local and would be unset by shell-exit time.
+    # shellcheck disable=SC2064 # expand local $mutex before it leaves scope
+    trap "rmdir '$mutex' 2>/dev/null || true" EXIT
+    local rc=0
+    ( "$@" ) || rc=$?
+    rmdir "$mutex" 2>/dev/null || true
+    trap - EXIT
+    return $rc
+  fi
 }
 
 read_lockfile() {
@@ -170,7 +194,8 @@ _cmd_acquire() {
   local path="$1"
   validate_path "$path"
   ensure_dirs
-  local lf="${LOCK_DIR}/$(sha1_of "$path").lock"
+  local lf
+  lf="${LOCK_DIR}/$(sha1_of "$path").lock"
   local now
   now=$(now_epoch)
 
@@ -218,7 +243,8 @@ _cmd_release() {
   local path="$1"
   validate_path "$path"
   ensure_dirs
-  local lf="${LOCK_DIR}/$(sha1_of "$path").lock"
+  local lf
+  lf="${LOCK_DIR}/$(sha1_of "$path").lock"
   # Unconditional remove — cross-process release is allowed by design
   # (acquire and release are typically separate bash invocations from the
   # same skill; PID-matching would never succeed). See header comment.
@@ -259,11 +285,13 @@ _cmd_clear_stale() {
     if [ -z "$rec" ]; then
       rm -f "$lf"; removed=$((removed + 1)); continue
     fi
-    local pid epoch age
-    pid=$(printf '%s' "$rec" | awk '{print $1}')
+    local epoch age
     epoch=$(printf '%s' "$rec" | awk '{print $2}')
+    case "$epoch" in
+      ''|*[!0-9]*) continue ;;
+    esac
     age=$((now - epoch))
-    if ! is_alive "$pid" || [ "$age" -gt "$max_age" ]; then
+    if [ "$age" -gt "$max_age" ]; then
       rm -f "$lf"; removed=$((removed + 1))
     fi
   done
@@ -275,7 +303,8 @@ _cmd_peek() {
   local path="$1"
   validate_path "$path"
   ensure_dirs
-  local lf="${LOCK_DIR}/$(sha1_of "$path").lock"
+  local lf
+  lf="${LOCK_DIR}/$(sha1_of "$path").lock"
   if [ ! -f "$lf" ]; then
     echo "unheld"
     return 0

@@ -59,7 +59,8 @@ worker() {
   local attempts=0
   local max_attempts=50
   # Random jitter so workers don't all hit at the same instant
-  local jitter=$(awk -v id="$id" 'BEGIN { srand(id); print int(rand()*100) }')
+  local jitter
+  jitter=$(awk -v id="$id" 'BEGIN { srand(id); print int(rand()*100) }')
   # POSIX-portable sub-second sleep via sleep(1) with fractional seconds (GNU/macOS supports it)
   sleep "0.0${jitter}" 2>/dev/null || sleep 1
 
@@ -95,7 +96,7 @@ done
 assert_eq "all workers completed (no give-ups)" "0" "$FAILED_WORKERS"
 
 # ── Verify: file has seed + exactly N tagged lines ──────────────────────────
-TOTAL_LINES=$(wc -l < "$TARGET_ABS")
+TOTAL_LINES=$(wc -l < "$TARGET_ABS" | tr -d '[:space:]')
 assert_eq "total line count (seed + workers)" "$((WORKERS + 1))" "$TOTAL_LINES"
 
 # Every worker tag must appear exactly once
@@ -110,7 +111,7 @@ echo "OK   every worker tag appears exactly once"
 PASS=$((PASS + 1))
 
 # ── Verify: no orphaned lockfiles ───────────────────────────────────────────
-LIVE_LOCKS=$(bash "$LOCK_SH" list | wc -l)
+LIVE_LOCKS=$(bash "$LOCK_SH" list | wc -l | tr -d '[:space:]')
 assert_eq "no live lockfiles after workers exited" "0" "$LIVE_LOCKS"
 
 # ── Verify: clear-stale reports 0 (nothing to reap) ─────────────────────────
@@ -118,7 +119,7 @@ REAPED=$(bash "$LOCK_SH" clear-stale --max-age 0)
 assert_eq "clear-stale reaped count" "0" "$REAPED"
 
 # ── Verify: file content sanity (no truncated/garbled lines) ────────────────
-GARBLED=$(awk 'length > 100' "$TARGET_ABS" | wc -l)
+GARBLED=$(awk 'length > 100' "$TARGET_ABS" | wc -l | tr -d '[:space:]')
 assert_eq "no garbled (overlong) lines" "0" "$GARBLED"
 
 echo ""

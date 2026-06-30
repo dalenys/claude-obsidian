@@ -1,13 +1,25 @@
 #!/usr/bin/env bash
 # claude-obsidian vault setup script
 # Run this ONCE before opening Obsidian for the first time.
-# Usage: bash bin/setup-vault.sh [optional: /path/to/vault]
+# Usage: bash bin/setup-vault.sh [--force] [optional: /path/to/vault]
 # Default: uses the directory where this script lives (the vault root)
 
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-VAULT="${1:-$(dirname "$SCRIPT_DIR")}"
+PLUGIN_ROOT="$(dirname "$SCRIPT_DIR")"
+FORCE=false
+VAULT=""
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --force) FORCE=true ;;
+    -*) echo "ERR: unknown flag: $1" >&2; exit 2 ;;
+    *) [ -z "$VAULT" ] || { echo "ERR: only one vault path is allowed" >&2; exit 2; }
+       VAULT="$1" ;;
+  esac
+  shift
+done
+VAULT="${VAULT:-$(dirname "$SCRIPT_DIR")}"
 OBSIDIAN="$VAULT/.obsidian"
 
 echo "Setting up claude-obsidian vault at: $VAULT"
@@ -18,8 +30,24 @@ mkdir -p "$VAULT/.raw"
 mkdir -p "$VAULT/wiki/concepts" "$VAULT/wiki/entities" "$VAULT/wiki/sources" "$VAULT/wiki/meta"
 mkdir -p "$VAULT/_templates"
 
+install_config() {
+  local target="$1" staged="$2"
+  if [ -e "$target" ] && ! $FORCE; then
+    echo "— Preserving existing ${target#"$VAULT"/}"
+    rm -f "$staged"
+    return
+  fi
+  if [ -e "$target" ]; then
+    local stamp
+    stamp="$(date -u +%Y%m%dT%H%M%SZ)-$$"
+    cp -p "$target" "${target}.backup-${stamp}"
+  fi
+  mv "$staged" "$target"
+}
+
 # ── 2. Write graph.json ───────────────────────────────────────────────────────
-cat > "$OBSIDIAN/graph.json" << 'EOF'
+GRAPH_TMP="$OBSIDIAN/.graph.json.$$"
+cat > "$GRAPH_TMP" << 'EOF'
 {
   "collapse-filter": false,
   "search": "path:wiki",
@@ -46,9 +74,11 @@ cat > "$OBSIDIAN/graph.json" << 'EOF'
   "scale": 1.0
 }
 EOF
+install_config "$OBSIDIAN/graph.json" "$GRAPH_TMP"
 
 # ── 3. Write app.json (excluded files) ───────────────────────────────────────
-cat > "$OBSIDIAN/app.json" << 'EOF'
+APP_TMP="$OBSIDIAN/.app.json.$$"
+cat > "$APP_TMP" << 'EOF'
 {
   "userIgnoreFilters": [
     "agents/",
@@ -63,9 +93,11 @@ cat > "$OBSIDIAN/app.json" << 'EOF'
   ]
 }
 EOF
+install_config "$OBSIDIAN/app.json" "$APP_TMP"
 
 # ── 4. Write appearance.json (enable CSS snippets) ───────────────────────────
-cat > "$OBSIDIAN/appearance.json" << 'EOF'
+APPEARANCE_TMP="$OBSIDIAN/.appearance.json.$$"
+cat > "$APPEARANCE_TMP" << 'EOF'
 {
   "enabledCssSnippets": [
     "vault-colors",
@@ -74,14 +106,17 @@ cat > "$OBSIDIAN/appearance.json" << 'EOF'
   ]
 }
 EOF
+install_config "$OBSIDIAN/appearance.json" "$APPEARANCE_TMP"
 
 # ── 5. Download Excalidraw main.js (8MB, not in git) ─────────────────────────
 EXCALIDRAW="$OBSIDIAN/plugins/obsidian-excalidraw-plugin"
 if [ -f "$EXCALIDRAW/manifest.json" ] && [ ! -f "$EXCALIDRAW/main.js" ]; then
   echo "Downloading Excalidraw main.js (~8MB)..."
-  curl -sS -L \
-    "https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/latest/download/main.js" \
-    -o "$EXCALIDRAW/main.js"
+  EXCALIDRAW_VERSION="2.22.0"
+  EXCALIDRAW_SHA256="8f7d5dc538228020805a255db9615ba2fdb82a9c0e6081f1b37ee7c2750ab37e"
+  EXCALIDRAW_URL="https://github.com/zsviczian/obsidian-excalidraw-plugin/releases/download/${EXCALIDRAW_VERSION}/main.js"
+  bash "$PLUGIN_ROOT/scripts/install-verified-download.sh" \
+    "$EXCALIDRAW_URL" "$EXCALIDRAW_SHA256" "$EXCALIDRAW/main.js"
   echo "✓ Excalidraw main.js downloaded"
 elif [ -f "$EXCALIDRAW/main.js" ]; then
   echo "✓ Excalidraw main.js already present"

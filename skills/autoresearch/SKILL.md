@@ -8,7 +8,7 @@ description: >
   Triggers on: "/autoresearch", "autoresearch", "research [topic]", "deep dive into [topic]",
   "investigate [topic]", "find everything about [topic]", "research and file",
   "go research", "build a wiki on".
-allowed-tools: Read Write Edit Glob Grep WebFetch WebSearch
+allowed-tools: Read Write Edit Glob Grep WebFetch WebSearch Bash
 ---
 
 # autoresearch: Autonomous Research Loop
@@ -77,11 +77,14 @@ The research loop is a high write-rate skill (often 10-30 page writes per topic)
 bash scripts/wiki-lock.sh acquire wiki/sources/<slug>.md || sleep 2 && bash scripts/wiki-lock.sh acquire wiki/sources/<slug>.md
 # … write via §Transport-selected method …
 bash scripts/wiki-lock.sh release wiki/sources/<slug>.md
+bash scripts/auto-commit-wiki.sh
 ```
 
 If autoresearch is invoked in parallel (e.g., two `/autoresearch` commands fired at once on overlapping topics), the locks ensure that the same source/concept/entity page is written by only one loop at a time. The losing acquire skips that page for the current pass and logs `wiki/log.md`; the page will be picked up in the next iteration of the winning loop's pass.
 
 See `skills/wiki-ingest/SKILL.md` §Concurrency for the full lock semantics.
+After all pages in a research pass are written and every lock is released, run
+`bash scripts/auto-commit-wiki.sh` once to complete deferred staging and commit.
 
 ---
 

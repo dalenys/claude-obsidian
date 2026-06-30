@@ -54,6 +54,7 @@ Mode-specific follow-up:
 if bash scripts/wiki-lock.sh acquire wiki/concepts/Foo.md; then
   # ... do the write via the §Transport-selected method ...
   bash scripts/wiki-lock.sh release wiki/concepts/Foo.md
+  bash scripts/auto-commit-wiki.sh
 else
   # rc=75: another writer is in flight. Retry once after 2s; if still held,
   # log to wiki/log.md and skip this page rather than overwrite.
@@ -61,6 +62,7 @@ else
   bash scripts/wiki-lock.sh acquire wiki/concepts/Foo.md && {
     # write …
     bash scripts/wiki-lock.sh release wiki/concepts/Foo.md
+    bash scripts/auto-commit-wiki.sh
   } || echo "skipped wiki/concepts/Foo.md (locked); logged to wiki/log.md"
 fi
 ```
@@ -70,6 +72,8 @@ Properties:
 - **Age-based staleness.** Default `STALE_AFTER_SEC=60`. A crashed holder unblocks in ≤60 seconds without manual intervention. See `scripts/wiki-lock.sh` header for the full semantics.
 - **Cross-process release.** Release is `rm -f` (no PID match required). Skill authors are trusted to release locks they acquire; cross-skill release is allowed by design (a janitor running `wiki-lock clear-stale --max-age 0` is the canonical recovery path).
 - **The PostToolUse hook now defers `git add` if any locks are currently held**, so the auto-commit doesn't fire mid-ingest and produce torn commits. See `hooks/hooks.json`.
+- After the final lock in an ingest batch is released, run
+  `bash scripts/auto-commit-wiki.sh` once to complete the deferred commit.
 
 `wiki-lock` is unconditional in v1.7+ — there is no feature gate, no fallback. Skills that don't acquire locks are racing against any other writer. The script is in core, not opt-in.
 
@@ -101,7 +105,8 @@ Before ingesting any file, check `.raw/.manifest.json` to avoid re-processing un
 ```
 
 **Before ingesting a file:**
-1. Compute a hash: `md5sum [file] | cut -d' ' -f1` (or `sha256sum` on Linux).
+1. Compute a portable SHA-256 hash:
+   `if command -v shasum >/dev/null 2>&1; then shasum -a 256 "$file" | awk '{print $1}'; else sha256sum "$file" | awk '{print $1}'; fi`.
 2. Check if the path exists in `.manifest.json` with the same hash.
 3. If hash matches, skip. Report: "Already ingested (unchanged). Use `force` to re-ingest."
 4. If missing or hash differs, proceed with ingest.

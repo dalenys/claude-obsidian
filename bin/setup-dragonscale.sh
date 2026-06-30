@@ -32,8 +32,8 @@ chmod +x scripts/allocate-address.sh scripts/tiling-check.py
 # ── 2. Provision .vault-meta/ ─────────────────────────────────────────────────
 mkdir -p .vault-meta
 if [ ! -f .vault-meta/address-counter.txt ]; then
-  echo "1" > .vault-meta/address-counter.txt
-  echo "OK  .vault-meta/address-counter.txt initialized at 1"
+  ./scripts/allocate-address.sh --rebuild >/dev/null
+  echo "OK  .vault-meta/address-counter.txt rebuilt from existing addresses"
 else
   echo "--  .vault-meta/address-counter.txt already present (not overwritten)"
 fi
@@ -100,7 +100,7 @@ fi
 echo ""
 echo "Sanity checks:"
 NEXT=$(./scripts/allocate-address.sh --peek 2>&1 | tail -1)
-echo "  next address: c-$(printf '%06d' $NEXT)"
+echo "  next address: c-$(printf '%06d' "$NEXT")"
 
 PYTHON=$(command -v python3 || echo "not installed")
 echo "  python3:      $PYTHON"

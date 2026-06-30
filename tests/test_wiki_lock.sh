@@ -6,7 +6,7 @@
 #   - acquire returns 0 on first call, 75 on second call from a holding context
 #   - release frees the lock and re-acquire works
 #   - list shows held locks; reflects releases
-#   - clear-stale removes locks for dead PIDs
+#   - clear-stale removes expired leases, but preserves fresh cross-process locks
 #   - peek is read-only and reports unheld/held correctly
 #   - path validation rejects absolute paths and traversal
 #
@@ -62,6 +62,13 @@ echo ""
 wl acquire wiki/concepts/Foo.md >/dev/null
 assert_eq "first acquire rc" "0" "$?"
 
+# Administrative cleanup is lease-age based. The acquire process has exited,
+# but a fresh cross-process lock remains valid.
+REMOVED=$(wl clear-stale --max-age 3600)
+assert_eq "clear-stale preserves fresh cross-process lease" "0" "$REMOVED"
+PEEK_AFTER_CLEAN=$(wl peek wiki/concepts/Foo.md)
+assert_true "fresh lease still exists after clear-stale" test "$PEEK_AFTER_CLEAN" != "unheld"
+
 # ── second acquire while the lock is fresh returns 75 ────────────────────────
 # With age-based staleness (STALE_AFTER_SEC=60 default), the lock is held until
 # either an explicit release OR 60 seconds elapse. A second acquire immediately
@@ -111,6 +118,7 @@ wl release wiki/concepts/Aged.md
 # ── clear-stale with max-age=0 reaps everything ──────────────────────────────
 # First seed a lock to reap
 wl acquire wiki/concepts/Reap.md >/dev/null
+sleep 1
 REMOVED=$(wl clear-stale --max-age 0)
 # Should have removed 1 (the Reap.md lock)
 case "$REMOVED" in
@@ -156,7 +164,7 @@ for i in $(seq 1 10); do
     break
   fi
 done
-LIST_COUNT=$(wl list | wc -l)
+LIST_COUNT=$(wl list | wc -l | tr -d '[:space:]')
 assert_eq "10 unique paths all acquired" "10" "$LIST_COUNT"
 wl clear-stale --max-age 0 >/dev/null
 

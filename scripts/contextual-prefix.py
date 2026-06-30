@@ -367,6 +367,8 @@ def process_page(page_path, force_synthetic=False, rebuild=False, peek=False,
         # so the user notices empty-body pages (often frontmatter-only stubs).
         log(f"{progress}WARN: {page_path.relative_to(VAULT_ROOT)} has no chunkable body content "
             f"(empty after frontmatter strip). Skipping; no chunks written.")
+        if not peek and chunk_dir.exists():
+            shutil.rmtree(chunk_dir)
         return {"address": address, "written": [], "skipped": 0, "tier": tier}
 
     log(f"{progress}-> {page_path.relative_to(VAULT_ROOT)}  address={address}  chunks={len(chunks)}  tier={tier}")
@@ -421,8 +423,37 @@ def process_page(page_path, force_synthetic=False, rebuild=False, peek=False,
                 tmp.unlink(missing_ok=True)
         written.append(chunk_path.name)
 
+    if not peek:
+        expected = {f"chunk-{idx:03d}.json" for idx in range(len(chunks))}
+        for stale in chunk_dir.glob("chunk-*.json"):
+            if stale.name not in expected:
+                stale.unlink()
+
     log(f"   wrote={len(written)}  skipped(unchanged)={skipped}")
     return {"address": address, "written": written, "skipped": skipped, "tier": tier}
+
+
+def garbage_collect_deleted_pages(peek=False):
+    """Remove chunk directories whose recorded source page no longer exists."""
+    if not CHUNKS_DIR.is_dir():
+        return 0
+    removed = 0
+    for chunk_dir in CHUNKS_DIR.iterdir():
+        if not chunk_dir.is_dir():
+            continue
+        records = sorted(chunk_dir.glob("chunk-*.json"))
+        if not records:
+            continue
+        try:
+            page_path = json.loads(records[0].read_text(encoding="utf-8")).get("page_path")
+        except (json.JSONDecodeError, OSError):
+            continue
+        if page_path and not (VAULT_ROOT / page_path).is_file():
+            log(f"   {'would remove' if peek else 'removing'} orphan chunks: {chunk_dir.name}")
+            if not peek:
+                shutil.rmtree(chunk_dir)
+            removed += 1
+    return removed
 
 
 def collect_pages(target):
@@ -496,6 +527,8 @@ def main():
         )
         total_written += len(result["written"])
         total_skipped += result["skipped"]
+    if args.path == "--all":
+        garbage_collect_deleted_pages(peek=args.peek)
 
     log(f"\nDone. pages={total}  chunks_written={total_written}  chunks_unchanged={total_skipped}")
     return EXIT_OK

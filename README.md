@@ -125,6 +125,8 @@ Open the folder in Obsidian: **Manage Vaults → Open folder as vault → select
 Open Claude Code in the same folder. Type `/wiki`.
 
 > ℹ️ `setup-vault.sh` configures `graph.json` (filter + colors), `app.json` (excludes plugin dirs), and `appearance.json` (enables CSS). Run it once before the first Obsidian open. You get the fully pre-configured graph view, color scheme, and wiki structure out of the box.
+> Existing Obsidian JSON files are preserved. Use `bash bin/setup-vault.sh --force`
+> only when you intend to replace them; the script creates timestamped backups first.
 
 ---
 

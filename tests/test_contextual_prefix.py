@@ -11,6 +11,7 @@ Usage:
 """
 import importlib.util
 import json
+import tempfile
 from pathlib import Path
 from unittest import mock
 
@@ -98,6 +99,38 @@ def test_payload_attaches_cache_control_by_body_size():
                     "cache_control" not in captured["body"]["system"][1])
 
 
+def test_chunk_reconciliation_and_deleted_page_gc():
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp)
+        wiki = root / "wiki"
+        chunks = root / ".vault-meta" / "chunks"
+        wiki.mkdir()
+        page = wiki / "page.md"
+        page.write_text("---\naddress: c-000001\ntitle: Page\n---\n\n" + ("a" * 2100) + "\n\n" + ("b" * 2100))
+        with mock.patch.object(cp, "VAULT_ROOT", root), \
+             mock.patch.object(cp, "WIKI_DIR", wiki), \
+             mock.patch.object(cp, "CHUNKS_DIR", chunks):
+            cp.process_page(page, force_synthetic=True)
+            assert_true("initial page creates multiple chunks",
+                        len(list((chunks / "c-000001").glob("chunk-*.json"))) > 1)
+            page.write_text("---\naddress: c-000001\ntitle: Page\n---\n\nshort")
+            cp.process_page(page, force_synthetic=True)
+            assert_eq("shrunk page removes surplus chunks", 1,
+                      len(list((chunks / "c-000001").glob("chunk-*.json"))))
+            page.write_text("---\naddress: c-000001\ntitle: Page\n---\n")
+            cp.process_page(page, force_synthetic=True)
+            assert_true("empty page removes former chunk directory",
+                        not (chunks / "c-000001").exists())
+            orphan = chunks / "c-999999"
+            orphan.mkdir()
+            (orphan / "chunk-000.json").write_text(json.dumps(
+                {"page_path": "wiki/deleted.md"}))
+            cp.garbage_collect_deleted_pages(peek=True)
+            assert_true("peek preserves deleted-page chunks", orphan.exists())
+            cp.garbage_collect_deleted_pages(peek=False)
+            assert_true("--all GC removes deleted-page chunks", not orphan.exists())
+
+
 def main():
     print("=== test_contextual_prefix.py ===")
     test_below_floor_returns_none()
@@ -105,6 +138,7 @@ def main():
     test_at_floor_returns_ephemeral()
     test_above_floor_returns_ephemeral()
     test_payload_attaches_cache_control_by_body_size()
+    test_chunk_reconciliation_and_deleted_page_gc()
     print("\nAll contextual-prefix tests passed.")
 
 

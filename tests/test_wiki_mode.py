@@ -260,6 +260,24 @@ def test_invalid_content_type_raises():
         assert_eq("invalid type → exit 4", 4, e.code)
 
 
+def test_configured_folders_cannot_escape_wiki():
+    cases = [
+        ("generic", "sources_folder"),
+        ("lyt", "notes_folder"),
+        ("para", "resources_folder"),
+        ("zettelkasten", "root_folder"),
+    ]
+    for mode, key in cases:
+        for bad in ("/tmp/evil/", "wiki/../evil/"):
+            cfg = json.loads(json.dumps(wm.DEFAULT_CONFIG))
+            cfg["config"][mode][key] = bad
+            try:
+                wm.route_path(mode, "source", "x", cfg)
+                raise Fail(f"{mode} accepted escaping folder {bad}")
+            except SystemExit as e:
+                assert_eq(f"{mode} rejects {bad}", 4, e.code)
+
+
 # ─── CLI subprocess: `wiki-mode.py get` returns mode string ─────────────────
 def test_cli_get_returns_mode():
     """End-to-end CLI test via subprocess; uses the actual vault's mode (or generic if absent)."""
@@ -337,6 +355,7 @@ def main():
     test_cli_route_mode_override_previews_without_writing()
     test_cli_route_mode_override_rejects_invalid()
     test_invalid_content_type_raises()
+    test_configured_folders_cannot_escape_wiki()
     test_cli_get_returns_mode()
     test_cli_id_returns_timestamp()
     test_cli_route_returns_path()
