@@ -56,12 +56,13 @@ assert_eq "third alloc"   "c-000003" "$A3"
 
 # --- Test 5: concurrent allocations are unique ---
 ./scripts/allocate-address.sh --rebuild >/dev/null
-for i in $(seq 1 10); do
+for _ in $(seq 1 10); do
   (./scripts/allocate-address.sh >> concurrent.txt) &
 done
 wait
-UNIQ=$(sort -u concurrent.txt | wc -l)
-TOTAL=$(wc -l < concurrent.txt)
+# BSD/macOS wc pads counts; normalize whitespace for cross-platform assertions.
+UNIQ=$(sort -u concurrent.txt | wc -l | tr -d '[:space:]')
+TOTAL=$(wc -l < concurrent.txt | tr -d '[:space:]')
 assert_eq "10 concurrent allocs: unique count" "10" "$UNIQ"
 assert_eq "10 concurrent allocs: total count"  "10" "$TOTAL"
 
