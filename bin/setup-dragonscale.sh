@@ -32,8 +32,8 @@ chmod +x scripts/allocate-address.sh scripts/tiling-check.py
 # ── 2. Provision .vault-meta/ ─────────────────────────────────────────────────
 mkdir -p .vault-meta
 if [ ! -f .vault-meta/address-counter.txt ]; then
-  echo "1" > .vault-meta/address-counter.txt
-  echo "OK  .vault-meta/address-counter.txt initialized at 1"
+  ./scripts/allocate-address.sh --rebuild >/dev/null
+  echo "OK  .vault-meta/address-counter.txt rebuilt from existing addresses"
 else
   echo "--  .vault-meta/address-counter.txt already present (not overwritten)"
 fi

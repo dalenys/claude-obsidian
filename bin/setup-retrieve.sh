@@ -35,6 +35,7 @@
 #   bash bin/setup-retrieve.sh --no-llm     # force tier-3 synthetic-only
 #   bash bin/setup-retrieve.sh --rebuild    # rebuild all chunks
 #   bash bin/setup-retrieve.sh --check      # diagnostics only; no provisioning
+#   bash bin/setup-retrieve.sh --allow-remote-ollama --check
 
 set -euo pipefail
 
@@ -45,12 +46,14 @@ META="$VAULT/.vault-meta"
 NO_LLM=false
 REBUILD=false
 CHECK_ONLY=false
+ALLOW_REMOTE_OLLAMA=false
 
 while [ $# -gt 0 ]; do
   case "$1" in
     --no-llm)   NO_LLM=true ;;
     --rebuild)  REBUILD=true ;;
     --check)    CHECK_ONLY=true ;;
+    --allow-remote-ollama) ALLOW_REMOTE_OLLAMA=true ;;
     -h|--help)
       sed -n '2,30p' "$0" | sed 's/^# \{0,1\}//'
       exit 0
@@ -103,7 +106,7 @@ OLLAMA_URL="${OLLAMA_URL:-http://127.0.0.1:11434}"
 case "$OLLAMA_URL" in
   "http://127.0.0.1:"*|"http://localhost:"*|"http://[::1]:"*) ;;
   *)
-    if ! printf '%s ' "$@" | grep -q -- '--allow-remote-ollama'; then
+    if ! $ALLOW_REMOTE_OLLAMA; then
       warn "OLLAMA_URL points off-localhost: $OLLAMA_URL"
       warn "Refusing to probe remote ollama without explicit consent."
       warn "Pass --allow-remote-ollama to bin/setup-retrieve.sh to opt in, or"

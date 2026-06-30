@@ -49,11 +49,14 @@ bash scripts/wiki-lock.sh acquire "$FOLD_PATH" || {
 }
 # … write the fold via Write/Edit (which fires the PostToolUse hook) …
 bash scripts/wiki-lock.sh release "$FOLD_PATH"
+bash scripts/auto-commit-wiki.sh
 ```
 
 Fold pages are deterministically named (`fold-k{K}-from-{DATE}-to-{DATE}-n{COUNT}.md`), so two parallel folds with the same parameters target the same path. Without the lock, they could overwrite each other's outputs. The duplicate-detection check inside this skill (already documented below) handles the "fold already exists" case at the SKILL level; the lock handles the in-flight-write race at the OS level.
 
 Dry-run mode does not acquire a lock (no writes happen).
+Commit mode runs `bash scripts/auto-commit-wiki.sh` once after the last lock is
+released; this completes the commit deferred while the lock was held.
 
 See `skills/wiki-ingest/SKILL.md` §Concurrency for the full lock semantics.
 

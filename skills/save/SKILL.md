@@ -7,7 +7,7 @@ description: >
   Triggers on: "save this", "save that answer", "/save", "file this",
   "save to wiki", "save this session", "file this conversation", "keep this",
   "save this analysis", "add this to the wiki".
-allowed-tools: Read Write Edit Glob Grep
+allowed-tools: Read Write Edit Glob Grep Bash
 ---
 
 # save: File Conversations Into the Wiki
@@ -52,11 +52,14 @@ bash scripts/wiki-lock.sh acquire "$NOTE_PATH" || {
 }
 # … write the note via §Transport-selected method …
 bash scripts/wiki-lock.sh release "$NOTE_PATH"
+bash scripts/auto-commit-wiki.sh
 ```
 
 For multi-file saves (e.g., session note + index update + log append), acquire each lock in sorted-path order to avoid deadlocks. Index/log/hot updates lock just like content pages.
 
 See `skills/wiki-ingest/SKILL.md` §Concurrency for the full lock semantics.
+For multi-file saves, run `bash scripts/auto-commit-wiki.sh` exactly once after
+the final lock is released so writes deferred by the hook are committed together.
 
 ---
 

@@ -36,7 +36,7 @@ The following Obsidian community plugins ship with this vault as pre-installed b
 | Obsidian Excalidraw | Zsolt Viczian | https://github.com/zsviczian/obsidian-excalidraw-plugin |
 | Obsidian Banners | Danny Hernandez | https://github.com/noatpad/obsidian-banners |
 
-`obsidian-excalidraw-plugin/main.js` is **not** included in this repository. It is downloaded automatically by `bin/setup-vault.sh` from the plugin's official GitHub releases.
+`obsidian-excalidraw-plugin/main.js` is **not** included in this repository. It is downloaded automatically by `bin/setup-vault.sh` from a pinned official GitHub release and verified against a committed SHA-256 digest before installation.
 
 ---
 

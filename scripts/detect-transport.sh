@@ -59,10 +59,6 @@ log() { $QUIET || echo "$@" >&2; }
 # surrounding double quotes). Used for any untrusted value that lands in the
 # transport.json heredoc — newlines, backslashes, control chars in upstream
 # binaries (obsidian-cli --version) would otherwise break the JSON.
-json_escape() {
-  python3 -c 'import json,sys; print(json.dumps(sys.stdin.read().strip()), end="")'
-}
-
 mkdir -p "$META_DIR" || {
   echo "ERR: cannot create .vault-meta/ at $META_DIR" >&2
   exit 2
@@ -90,9 +86,9 @@ try:
     if data.get("manual_override") is True:
         pref = data.get("preferred", "")
         chain = data.get("fallback_chain", [])
-        # Output: line 1 = preferred; line 2 = comma-separated quoted chain entries.
+        # Output: line 1 = preferred; line 2 = JSON chain.
         print(pref)
-        print(",".join('"' + str(c) + '"' for c in chain))
+        print(json.dumps(chain))
 except Exception:
     pass
 PYEOF
@@ -117,31 +113,26 @@ fi
 # ── 1. CLI detection ─────────────────────────────────────────────────────────
 CLI_PRESENT=false
 CLI_BINARY=""
-CLI_VERSION=""
 CLI_VERSION_RAW=""
-if command -v obsidian-cli >/dev/null 2>&1; then
+cli_capable() {
+  local help
+  help="$("$1" --help 2>/dev/null || true)"
+  for command in read write append search; do
+    printf '%s\n' "$help" | grep -q "$command" || return 1
+  done
+}
+if command -v obsidian-cli >/dev/null 2>&1 && cli_capable obsidian-cli; then
   CLI_PRESENT=true
   CLI_BINARY="obsidian-cli"
-  # Keep two views of the version: RAW for the human log line, JSON-escaped
-  # for the transport.json heredoc. CLI_VERSION below is pre-quoted (includes
-  # the surrounding double quotes), so the heredoc emits ${CLI_VERSION}
-  # without wrapping quotes.
   CLI_VERSION_RAW="$(obsidian-cli --version 2>/dev/null | head -1 || echo unknown)"
-  CLI_VERSION="$(printf '%s' "$CLI_VERSION_RAW" | json_escape || echo '"unknown"')"
 elif command -v obsidian >/dev/null 2>&1; then
   # Obsidian 1.12+ ships `obsidian` as the CLI binary on some platforms.
   # We treat it as cli-capable if it accepts a --cli or --version flag without launching the GUI.
-  if obsidian --version >/dev/null 2>&1; then
+  if obsidian --version >/dev/null 2>&1 && cli_capable obsidian; then
     CLI_PRESENT=true
     CLI_BINARY="obsidian"
     CLI_VERSION_RAW="$(obsidian --version 2>/dev/null | head -1 || echo unknown)"
-    CLI_VERSION="$(printf '%s' "$CLI_VERSION_RAW" | json_escape || echo '"unknown"')"
   fi
-fi
-# Fallback default when neither binary was found: must still be a valid JSON literal.
-if [ -z "$CLI_VERSION" ]; then
-  CLI_VERSION='""'
-  CLI_VERSION_RAW=""
 fi
 
 # ── 2. Obsidian app running? (informational only; CLI works either way) ──────
@@ -155,10 +146,10 @@ fi
 # ── 3. Compute preferred + fallback chain ────────────────────────────────────
 if $CLI_PRESENT; then
   PREFERRED="cli"
-  CHAIN='"cli", "filesystem"'
+  CHAIN='["cli", "filesystem"]'
 else
   PREFERRED="filesystem"
-  CHAIN='"filesystem"'
+  CHAIN='["filesystem"]'
 fi
 
 # ── 3b. Apply manual_override if it was parsed from the existing snapshot ────
@@ -174,40 +165,48 @@ TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 HOSTNAME="$(hostname 2>/dev/null || echo unknown)"
 
 snapshot() {
-  cat <<JSON
-{
-  "schema_version": 1,
-  "detected_at": "${TIMESTAMP}",
-  "host": "${HOSTNAME}",
-  "vault_root": "${VAULT_ROOT}",
-  "manual_override": ${MANUAL_OVERRIDE_FLAG},
-  "preferred": "${PREFERRED}",
-  "fallback_chain": [${CHAIN}],
-  "available": {
-    "cli": {
-      "present": ${CLI_PRESENT},
-      "binary": "${CLI_BINARY}",
-      "version_string": ${CLI_VERSION},
-      "obsidian_app_running": ${OBSIDIAN_RUNNING}
+  TIMESTAMP="$TIMESTAMP" HOSTNAME="$HOSTNAME" VAULT_ROOT="$VAULT_ROOT" \
+  MANUAL_OVERRIDE_FLAG="$MANUAL_OVERRIDE_FLAG" PREFERRED="$PREFERRED" \
+  CHAIN="$CHAIN" CLI_PRESENT="$CLI_PRESENT" CLI_BINARY="$CLI_BINARY" \
+  CLI_VERSION_RAW="$CLI_VERSION_RAW" OBSIDIAN_RUNNING="$OBSIDIAN_RUNNING" \
+  python3 - <<'PY'
+import json
+import os
+
+boolean = lambda name: os.environ[name] == "true"
+root = os.environ["VAULT_ROOT"]
+data = {
+    "schema_version": 1,
+    "detected_at": os.environ["TIMESTAMP"],
+    "host": os.environ["HOSTNAME"],
+    "vault_root": root,
+    "manual_override": boolean("MANUAL_OVERRIDE_FLAG"),
+    "preferred": os.environ["PREFERRED"],
+    "fallback_chain": json.loads(os.environ["CHAIN"]),
+    "available": {
+        "cli": {
+            "present": boolean("CLI_PRESENT"),
+            "binary": os.environ["CLI_BINARY"],
+            "version_string": os.environ["CLI_VERSION_RAW"],
+            "obsidian_app_running": boolean("OBSIDIAN_RUNNING"),
+        },
+        "filesystem": {
+            "present": True,
+            "vault_root": root,
+            "note": "ultimate fallback; uses Claude's Read/Write/Edit tools directly",
+        },
+        "mcp_obsidian": {
+            "present": None, "detection": "deferred",
+            "note": "v1.7 does not auto-detect MCP servers. Configure manually per wiki/references/mcp-setup.md and edit this file by hand if needed.",
+        },
+        "mcpvault": {
+            "present": None, "detection": "deferred",
+            "note": "v1.7 does not auto-detect MCP servers. Configure manually per wiki/references/mcp-setup.md and edit this file by hand if needed.",
+        },
     },
-    "filesystem": {
-      "present": true,
-      "vault_root": "${VAULT_ROOT}",
-      "note": "ultimate fallback; uses Claude's Read/Write/Edit tools directly"
-    },
-    "mcp_obsidian": {
-      "present": null,
-      "detection": "deferred",
-      "note": "v1.7 does not auto-detect MCP servers. Configure manually per wiki/references/mcp-setup.md and edit this file by hand if needed."
-    },
-    "mcpvault": {
-      "present": null,
-      "detection": "deferred",
-      "note": "v1.7 does not auto-detect MCP servers. Configure manually per wiki/references/mcp-setup.md and edit this file by hand if needed."
-    }
-  }
 }
-JSON
+print(json.dumps(data, indent=2, ensure_ascii=False))
+PY
 }
 
 if [ "$MODE" = "peek" ]; then
