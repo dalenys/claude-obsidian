@@ -1,7 +1,7 @@
 ---
 type: meta
 title: "Operation Log"
-updated: 2026-04-08
+updated: 2026-06-30
 tags:
   - meta
   - log
@@ -25,7 +25,17 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 
 ---
 
+## [2026-06-30] ingest | v1.7 → v1.9.2 Release Arc
+
+- Type: self-documentation catch-up (source: `CHANGELOG.md` + git tags v1.7.0…v1.9.2)
+- Summary: [[2026-06-30-v1.7-v1.9.2-release-arc]]
+- Pages created: [[Methodology Modes]], [[Contextual Retrieval]], [[Multi-Writer Safety]], [[10-Principle Thinking Framework]], [[single-tenant-threat-model]], [[2026-06-30-v1.7-v1.9.2-release-arc]]
+- Pages updated: [[index]], [[hot]], [[overview]], [[concepts/_index]]
+- Addresses: c-000003…c-000007 (hand-allocated; `allocate-address.sh` fails on macOS — no `flock`)
+- Key insight: The vault had drifted ~2 months behind its own code; the Compound Vault era (locking, hybrid retrieval, methodology modes, thinking framework) is now filed. Throughline: every minor release was gated by a pre-push audit that drove same-day patch releases.
+
 ## [2026-04-24] save | v1.6.0 public release notes (Teams, Karpathy-style)
+
 - Type: release doc + visual assets
 - Locations (new): `docs/releases/v1.6.0.md` (346 lines, 6 sections, Karpathy-style prose), `wiki/meta/dragonscale-mechanism-overview.svg` (4-mechanism diagram with shared .vault-meta/ gate), `wiki/meta/dragonscale-6-test-flow.svg` (validation timeline), `wiki/meta/dragonscale-frontier-graph.svg` (M4 candidate + 3 filed pages)
 - Locations (modified): `wiki/meta/2026-04-24-v1.6.0-release-session.md` (cross-reference added pointing to public release notes)
@@ -37,6 +47,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Next recommended: user runs `gh release create v1.6.0 --notes-file docs/releases/v1.6.0.md` when ready to cut the public release. This also creates the annotated tag.
 
 ## [2026-04-24] save | DragonScale end-to-end validation pass (Teams, 6 tests)
+
 - Type: validation + first real fold + first real autoresearch
 - Tests executed (all green):
   - T0 ollama pull `nomic-embed-text`: done (274MB, 15s wall)
@@ -48,12 +59,13 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Locations (new): `wiki/folds/fold-k3-from-2026-04-23-to-2026-04-24-n8.md`, `wiki/meta/tiling-report-2026-04-24.md`, `wiki/concepts/Persistent Wiki Artifact.md`, `wiki/concepts/Source-First Synthesis.md`, `wiki/concepts/Query-Time Retrieval.md`
 - Locations (modified): `.vault-meta/address-counter.txt` (2 to 3), `wiki/index.md` (3 concept links), `wiki/concepts/_index.md` (3 concept links)
 - Scope: six-test menu the user approved. Codex gpt-5.4 for T1/T4/T6 (sub-agent delegation); chair for T0/T2/T3 (one-shot shell) and all integration (index, log, hot, commit).
-- Style: all new content uses colons or parens instead of em-dashes. Pre-existing em-dashes in index entries and wiki/concepts/_index.md left as-is (clean-room boundary; deferred to F-slice style pass).
+- Style: all new content uses colons or parens instead of em-dashes. Pre-existing em-dashes in index entries and wiki/concepts/\_index.md left as-is (clean-room boundary; deferred to F-slice style pass).
 - Tests still green: `make test` passes (74+ assertions).
 - Integration: chair added the 3 new concepts to `wiki/index.md` and `wiki/concepts/_index.md` with colon-style descriptions so the fresh pages are discoverable. The cluster extends `[[How does the LLM Wiki pattern work?]]` and cross-references `[[LLM Wiki Pattern]]`.
 - Next recommended slice: either (G) commit this test batch and declare v1.6.0 validated, or (H) run a second fold k=3 now that 8 newer entries exist above this one and close the hierarchical-fold-not-yet-supported loop in a future phase.
 
 ## [2026-04-24] save | v1.6.0 closeout (Teams, chair-led)
+
 - Type: docs + release hygiene
 - Locations (new): wiki/meta/2026-04-24-v1.6.0-release-session.md (release session summary, 346 lines), wiki/meta/boundary-frontier-2026-04-24.md (first M4 run artifact against this vault), docs/dragonscale-guide.md (user-facing DragonScale guide, 563 lines)
 - Locations (modified): wiki/hot.md (tag-claim fix, Scripts line adds boundary-score, tests line adds test_boundary_score, push-line drift, tiling line-count, one em-dash), docs/install-guide.md (version 1.5.0 to 1.6.0, DragonScale callout expanded to all four mechanisms, "hierarchical log folds" corrected to "flat extractive log folds", points to docs/dragonscale-guide.md), README.md (DragonScale parenthetical expanded to all four mechanisms plus guide link)
@@ -66,9 +78,10 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Next recommended slice: either (E) push to origin/main and create annotated tags v1.5.0, v1.5.1, v1.6.0 in landing order, or (F) dedicated style pass to scrub pre-existing em-dashes across install-guide.md, README.md, and any other wiki files flagged by a grep scan.
 
 ## [2026-04-24] save | DragonScale Phase 4 — boundary-first autoresearch shipped (v1.6.0)
+
 - Type: feature release
 - Locations (new): scripts/boundary-score.py (with --top, --page, --json, stdout-only CLI), tests/test_boundary_score.py (40+ assertions)
-- Locations (modified): skills/autoresearch/SKILL.md (new Topic Selection section A/B/C with helper-failure fallback), commands/autoresearch.md (no-topic candidate flow with agenda-control label), wiki/concepts/DragonScale Memory.md (v0.4: M4 flipped from NOT IMPLEMENTED to shipped; exact formula without recency floor; filename-stem disclosure; fence-handling qualifiers), CHANGELOG.md, .claude-plugin/{plugin,marketplace}.json (1.5.0 -> 1.6.0), Makefile (test-boundary target), wiki/hot.md, wiki/index.md, wiki/concepts/_index.md (status drift resolved).
+- Locations (modified): skills/autoresearch/SKILL.md (new Topic Selection section A/B/C with helper-failure fallback), commands/autoresearch.md (no-topic candidate flow with agenda-control label), wiki/concepts/DragonScale Memory.md (v0.4: M4 flipped from NOT IMPLEMENTED to shipped; exact formula without recency floor; filename-stem disclosure; fence-handling qualifiers), CHANGELOG.md, .claude-plugin/{plugin,marketplace}.json (1.5.0 -> 1.6.0), Makefile (test-boundary target), wiki/hot.md, wiki/index.md, wiki/concepts/\_index.md (status drift resolved).
 - Scope: boundary-first autoresearch as opt-in Topic Selection mode. `/autoresearch` without a topic surfaces top-5 frontier pages; user picks/overrides/declines. Explicit helper-failure fallback to user-ask. Labeled "agenda control" throughout to match the spec's scope disclosure.
 - Correctness: filename-stem resolution including folder-qualified `[[notes/Foo]]` -> Foo.md. Self-loops, unresolved targets, meta-targets, symlinks, and vault escapes all excluded. Code-fence parser handles backticks AND tildes with CommonMark length tracking (longer opening fence is not closed by shorter inner fence). Indented blocks intentionally not filtered (Obsidian bullet convention).
 - Recency: exp(-days/30), no floor. Stale pages approach zero weight so they do not dominate frontier ranking.
@@ -77,6 +90,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - All four DragonScale mechanisms now shipped and opt-in. 44 commits ahead of origin/main, no push.
 
 ## [2026-04-24] save | DragonScale Phase 3.5 — cross-phase hardening to v1.5.0
+
 - Type: release hardening
 - Locations (new): bin/setup-dragonscale.sh (opt-in installer), tests/test_allocate_address.sh, tests/test_tiling_check.py, Makefile, CHANGELOG.md
 - Locations (modified): hooks/hooks.json (+.vault-meta/ staging), agents/wiki-ingest.md (single-writer rule for addresses), agents/wiki-lint.md (Mechanism 2+3 checks), skills/wiki-ingest/SKILL.md (aligned non-DragonScale wording), wiki/concepts/DragonScale Memory.md (M2 severity matches lint, M4 marked NOT IMPLEMENTED, seed page gets address c-000001), .claude-plugin/{plugin.json,marketplace.json} (1.4.2/1.4.3 → 1.5.0), README.md (11 skills + DragonScale callout), wiki/hot.md (refreshed for v1.5.0), .raw/.manifest.json (address_map now has DragonScale Memory.md → c-000001), .gitignore (.vault-meta/.tiling.lock + cache), .vault-meta/address-counter.txt (advanced to 2).
@@ -86,6 +100,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Phase 3.5 complete. Repo state: 6 developer commits added this pass (f2e73c1, 2b49a0c, 8b28e48, 19ad7e4, 365f557, 2e7dd16). Total 39 commits ahead of origin/main. No push.
 
 ## [2026-04-24] save | DragonScale Phase 3 — semantic tiling MVP
+
 - Type: skill update + new script + threshold state
 - Locations: scripts/tiling-check.py (485 lines), .vault-meta/tiling-thresholds.json (seed defaults), skills/wiki-lint/SKILL.md (109-line Semantic Tiling section + item #10 in checks), wiki/concepts/DragonScale Memory.md (Mechanism 3 cost framing clarified)
 - Scope: opt-in embedding-based duplicate detection via ollama nomic-embed-text. Default bands error>=0.90, review>=0.80, explicitly documented as conservative seeds (not literature-backed interpolation). Calibration procedure documented, not automated.
@@ -103,6 +118,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Phase 3 complete. All three DragonScale mechanisms that were in-scope for the initial spec are now shipped as opt-in features. Mechanism 4 (boundary-first autoresearch) was flagged as agenda-control out-of-scope per the v0.2 scope boundary; may or may not ship as a future phase.
 
 ## [2026-04-23] save | DragonScale Phase 2 — deterministic page addresses MVP
+
 - Type: skill update + new script
 - Locations: scripts/allocate-address.sh, skills/wiki-ingest/SKILL.md (Address Assignment section), skills/wiki-lint/SKILL.md (Address Validation section), wiki/concepts/DragonScale Memory.md (Mechanism 2 rewritten v0.2→v0.3), .vault-meta/address-counter.txt, .raw/.manifest.json (new)
 - Scope: MVP address format `c-NNNNNN` (creation-order counter, zero-padded 6 digits). Rollout baseline 2026-04-23. Legacy pages exempt until deliberate backfill (future `l-` prefix). No content hash, no fold-ancestry encoding in the MVP (both deferred).
@@ -115,6 +131,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Phase 2 complete. Phase 3 (semantic tiling lint) gated on human approval.
 
 ## [2026-04-23] save | DragonScale Phase 1 — wiki-fold skill shipped
+
 - Type: skill
 - Location: skills/wiki-fold/SKILL.md, skills/wiki-fold/references/fold-template.md
 - Scope: flat extractive fold over raw wiki/log.md entries. Dry-run default via Bash stdout (no Write tool, avoids PostToolUse hook residue). Structural idempotency via deterministic fold_id. Duplicate-range detection. Fold-of-folds explicitly out of scope.
@@ -124,6 +141,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Phase 1 complete. Phase 2 (content-addressable paths) gated on human approval.
 
 ## [2026-04-23] save | DragonScale Memory v0.2 — post-adversarial-review
+
 - Type: concept revision
 - Location: wiki/concepts/DragonScale Memory.md
 - Review: codex exec adversarial review rejected all 7 load-bearing claims in v0.1
@@ -132,15 +150,17 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Phase 0 complete. Phase 1 (wiki-fold skill) gated on human approval.
 
 ## [2026-04-23] save | DragonScale Memory — Phase 0 design doc (proposed)
+
 - Type: concept
 - Location: wiki/concepts/DragonScale Memory.md
 - From: brainstorming session on applying Heighway dragon curve properties to LLM wiki memory architecture
 - Scope: memory-layer only, NOT agent reasoning. Four mechanisms: (1) fold operator (LSM-style exponential compaction at 2^k log entries), (2) content-addressable page paths for prompt-cache stability, (3) semantic tiling lint (embedding-based dedup, 0.85 cosine threshold), (4) boundary-first autoresearch scoring
 - Status: proposed. Phase 0 pending codex adversarial review. Phase 1+ (fold skill, address anchors, tiling lint, boundary score) gated on review pass.
 - Primary sources verified: Dragon curve (Wikipedia, boundary dim 1.523627086), Regular paperfolding sequence (OEIS A014577), LSM trees (arXiv 2504.17178, LevelDB 10x level ratio), MemGPT (arXiv 2310.08560), Anthropic prompt caching docs (5min/1hr TTL, 20-block lookback)
-- Links updated: wiki/concepts/_index.md, wiki/index.md
+- Links updated: wiki/concepts/\_index.md, wiki/index.md
 
 ## [2026-04-15] save | Claude SEO v1.9.0 Slides and GitHub Release
+
 - Type: session
 - Location: wiki/meta/2026-04-15-slides-and-release-session.md
 - From: built 15-slide HTML presentation deck (v190.html), fixed hardcoded path in release_report.py, pushed 68 files to GitHub, tagged v1.9.0, created GitHub release with PDF asset
@@ -148,6 +168,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Release: https://github.com/AgriciDaniel/claude-seo/releases/tag/v1.9.0
 
 ## [2026-04-15] save | Claude SEO v1.9.0 Release Report — PDF Complete
+
 - Type: session
 - Location: wiki/meta/2026-04-15-release-report-session.md
 - From: full session completing the v1.9.0 PDF release report. Dark theme, 13 pages, 1.53 MB. Fixed logo (double-space filename), empty spaces, page-break orphans, file:// URL encoding.
@@ -156,6 +177,7 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Output: `~/Desktop/Claude-SEO-v1.9.0-Release-Report.pdf`
 
 ## [2026-04-14] save | Claude SEO v1.9.0 — Pro Hub Challenge Integration Session
+
 - Type: session + 4 concept pages + 1 entity page
 - Location: wiki/meta/2026-04-14-claude-seo-v190-session.md
 - From: full v1.9.0 implementation session — reviewed 5 community submissions, integrated 4 new skills (seo-cluster, seo-sxo, seo-drift, seo-ecommerce), enhanced seo-hreflang, added DataForSEO cost guardrails
@@ -164,18 +186,21 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Key learnings: always verify subagent output (40-line count error caught), insertion-point bugs caught by max-effort plan review, pre-existing security debt identified (10 of 15 findings)
 
 ## [2026-04-14] save | SVG Diagram Style Guide
+
 - Type: concept
 - Location: wiki/concepts/SVG Diagram Style Guide.md
 - From: extracted design tokens from 17 production SVGs in claude-ads/assets/diagrams/
 - Covers: colors, typography, layout primitives, card patterns, arrow connectors, numbered circles, file naming
 
 ## [2026-04-14] save | Community CTA Footer Rollout
+
 - Type: decision
 - Location: wiki/meta/2026-04-14-community-cta-rollout.md
 - From: session adding Skool community footer to 6 skill repos (claude-ads, claude-seo, claude-obsidian, claude-blog, banana-claude, claude-cybersecurity)
 - Key insight: frequency calibration per tool type; single-point orchestrator instruction pattern
 
 ## [2026-04-10] save | Backlink Empire - Blog Posts, Karpathy Gist, GitHub Cross-Linking
+
 - Type: session
 - Location: wiki/meta/2026-04-10-backlink-empire-session.md
 - From: full session covering blog creation (claude-obsidian + claude-canvas), Karpathy gist comment, 26 GitHub README updates with Author/community/backlink sections, homepage URLs on 10 repos, topics on 25 repos, rankenstein.pro backlinks on 5 SEO repos
@@ -183,12 +208,14 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Impact: ~87 new backlinks from DA 96 github.com, 6 rankenstein.pro backlinks, 25 Skool community links
 
 ## [2026-04-08] save | claude-obsidian v1.4 Release Session
+
 - Type: session
 - Location: wiki/meta/claude-obsidian-v1.4-release-session.md
 - From: full release cycle covering v1.1 (URL/vision/delta tracking, 3 new skills), v1.4.0 (audit response, multi-agent compat, Bases dashboard, em dash scrub, security history rewrite), and v1.4.1 (plugin install command hotfix)
 - Key lessons: plugin install is 2-step (marketplace add then install), allowed-tools is not valid frontmatter, Bases uses filters/views/formulas not Dataview syntax, hook context does not survive compaction, git filter-repo needs 2 passes for full scrub
 
 ## [2026-04-08] ingest | Claude + Obsidian Ecosystem Research
+
 - Type: research ingest
 - Source: `.raw/claude-obsidian-ecosystem-research.md`
 - Queries: 6 parallel web searches + 12 repo deep-reads
@@ -197,15 +224,16 @@ Parse recent entries: `grep "^## \[" wiki/log.md | head -10`
 - Top gap confirmed: no delta tracking, no URL ingestion, no auto-commit
 
 ## [2026-04-07] session | Full Audit, System Setup & Plugin Installation
+
 - Type: session
 - Location: wiki/meta/full-audit-and-system-setup-session.md
 - From: 12-area repo audit, 3 fixes, plugin installed to local system, folder renamed
 
 ## [2026-04-07] session | claude-obsidian v1.2.0 Release Session
+
 - Type: session
 - Location: wiki/meta/claude-obsidian-v1.2.0-release-session.md
 - From: full build session — v1.2.0 plan execution, cosmic-brain→claude-obsidian rename, legal/security audit, branded GIFs, PDF install guide, dual GitHub repos
-
 
 - Source: `.raw/` (first ingest)
 - Pages updated: [[index]], [[log]], [[hot]], [[overview]]

@@ -112,12 +112,14 @@ _attachments/
 
 # DragonScale runtime lockfiles and local caches (flock + embedding cache; state files like counter.txt and thresholds.json ARE tracked)
 .vault-meta/.address.lock
+.vault-meta/.address.lock.d
 .vault-meta/.tiling.lock
 .vault-meta/tiling-cache.json
 .vault-meta/tiling-cache.*.tmp
 
 # v1.7 Compound Vault runtime artifacts (regenerable; host-specific)
 .vault-meta/.wiki-lock.meta
+.vault-meta/.wiki-lock.meta.d
 .vault-meta/.bm25.lock
 .vault-meta/.embed-cache.lock
 .vault-meta/locks/*

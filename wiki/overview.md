@@ -32,25 +32,27 @@ Run `/wiki` to scaffold this vault for your own domain and replace this overview
 
 ## Current Seed Content
 
-
 **Concepts seeded:**
+
 - [[LLM Wiki Pattern]] — the core architecture
 - [[Hot Cache]] — session context mechanism
 - [[Compounding Knowledge]] — why the pattern works
 
 **Entities seeded:**
+
 - [[Andrej Karpathy]] — originated the pattern
 
 **Sources seeded:**
+
 - [[claude-obsidian-ecosystem-research]] — 16+ projects, 13 cherry-picks identified (2026-04-08)
 
 ---
 
 ## Current State
 
-- Sources ingested: 2
-- Wiki pages: 26
-- Last activity: 2026-04-08 (v1.4.1 shipped, release session filed)
+- Sources ingested: 3 (2 .raw files + CHANGELOG self-doc)
+- Wiki pages: 40
+- Last activity: 2026-06-30 (v1.7→v1.9.2 release arc filed; vault caught up to code at v1.9.2)
 
 ---
 

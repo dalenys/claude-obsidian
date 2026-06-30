@@ -40,4 +40,13 @@ All concept pages — ideas, patterns, and frameworks extracted from sources.
 
 ---
 
+## Compound Vault (v1.7–v1.9)
+
+- [[Methodology Modes]] — LYT / PARA / Zettelkasten / Generic organizational styles (shipped v1.8)
+- [[Contextual Retrieval]] — hybrid contextual-prefix + BM25 + cosine-rerank, local-first (shipped v1.7, opt-in)
+- [[Multi-Writer Safety]] — per-file advisory locks; closes the v1.6 parallel-ingest corruption hole (shipped v1.7)
+- [[10-Principle Thinking Framework]] — OBSERVE…GROW as `/think` + an appendix on every skill (shipped v1.9)
+
+---
+
 ## Add new concepts here as they are extracted from sources.

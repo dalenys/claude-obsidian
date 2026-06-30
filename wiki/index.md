@@ -23,7 +23,7 @@ related:
 
 # Wiki Index
 
-Last updated: 2026-04-15 | Total pages: 34 | Sources ingested: 2
+Last updated: 2026-06-30 | Total pages: 40 | Sources ingested: 3 (2 .raw files + CHANGELOG self-doc)
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
@@ -44,6 +44,10 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 - [[Persistent Wiki Artifact]]: durable Markdown page as the LLM's memory object, distinct from ephemeral chat turns (status: developing)
 - [[Source-First Synthesis]]: provenance discipline; raw sources stay immutable while the wiki layer is synthesized and cited (status: developing)
 - [[Query-Time Retrieval]]: wiki query path synthesizes with citations; complementary to Obsidian's in-vault search (status: developing)
+- [[Methodology Modes]] — LYT / PARA / Zettelkasten / Generic organizational styles, consulted by ingest/save/autoresearch (status: shipped v1.8)
+- [[Contextual Retrieval]] — hybrid contextual-prefix + BM25 + cosine-rerank; Anthropic Sept 2024 recipe, local-first (status: shipped v1.7, opt-in)
+- [[Multi-Writer Safety]] — per-file advisory locks closing the v1.6 parallel-ingest corruption hole (status: shipped v1.7)
+- [[10-Principle Thinking Framework]] — OBSERVE…GROW as the `/think` skill + an appendix on every skill (status: shipped v1.9)
 
 ---
 
@@ -63,6 +67,20 @@ Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[
 ## Sources
 
 - [[claude-obsidian-ecosystem-research]] — 2026-04-08 | web research across 16+ repos | 8 wiki pages created
+
+---
+
+## References
+
+- [[single-tenant-threat-model]] — v1.9.1 trust boundary: three intentional single-tenant design choices + shared-host mitigations
+- [[methodology-modes]] — quick decision tree for picking a vault organizational style
+- [[transport-fallback]] — CLI → MCP → filesystem transport decision tree
+
+---
+
+## Release Notes
+
+- [[2026-06-30-v1.7-v1.9.2-release-arc]] — Compound Vault era spine: locking, hybrid retrieval, methodology modes, thinking framework (v1.7 → v1.9.2)
 
 ---
 

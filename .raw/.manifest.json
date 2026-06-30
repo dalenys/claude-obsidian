@@ -2,8 +2,34 @@
   "version": 1,
   "created": "2026-04-23",
   "description": "Ingest delta tracker and address map for the claude-obsidian vault. Do not hand-edit; wiki-ingest maintains this.",
-  "sources": {},
+  "sources": {
+    "CHANGELOG.md": {
+      "hash": "e883ec6e8e22770d0a4de2d365544823",
+      "ingested_at": "2026-06-30",
+      "note": "Self-documentation catch-up of the v1.7->v1.9.2 release arc; source is the root CHANGELOG plus git tags, not a .raw file. Expect the hash to change on every future release.",
+      "pages_created": [
+        "wiki/concepts/Methodology Modes.md",
+        "wiki/concepts/Contextual Retrieval.md",
+        "wiki/concepts/Multi-Writer Safety.md",
+        "wiki/concepts/10-Principle Thinking Framework.md",
+        "wiki/references/single-tenant-threat-model.md",
+        "wiki/meta/2026-06-30-v1.7-v1.9.2-release-arc.md"
+      ],
+      "pages_updated": [
+        "wiki/index.md",
+        "wiki/hot.md",
+        "wiki/overview.md",
+        "wiki/log.md",
+        "wiki/concepts/_index.md"
+      ]
+    }
+  },
   "address_map": {
-    "wiki/concepts/DragonScale Memory.md": "c-000001"
+    "wiki/concepts/DragonScale Memory.md": "c-000001",
+    "wiki/concepts/Methodology Modes.md": "c-000003",
+    "wiki/concepts/Contextual Retrieval.md": "c-000004",
+    "wiki/concepts/Multi-Writer Safety.md": "c-000005",
+    "wiki/concepts/10-Principle Thinking Framework.md": "c-000006",
+    "wiki/references/single-tenant-threat-model.md": "c-000007"
   }
 }
