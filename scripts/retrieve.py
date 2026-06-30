@@ -102,6 +102,16 @@ def chunk_snippet(chunk_data, max_chars=200):
     return text[:max_chars].rstrip() + "…"
 
 
+def dedupe_candidates(candidates, top_k):
+    """Collapse chunk hits to their best page before applying the result limit."""
+    by_page = {}
+    for candidate in candidates:
+        address = candidate.get("page_address")
+        if address not in by_page:
+            by_page[address] = candidate
+    return list(by_page.values())[:top_k]
+
+
 def main():
     parser = argparse.ArgumentParser(description="Hybrid retrieval over the vault.")
     parser.add_argument("query", help="Natural-language query")
@@ -150,28 +160,21 @@ def main():
         })
 
     if args.no_rerank:
-        final = candidates[:args.top]
+        final = candidates
         strategy = "bm25-only"
         for c in final:
             c["rerank_score"] = c["bm25_score"]
             c["rerank_source"] = "skipped"
     else:
         final = reranker.rerank(
-            args.query, candidates, top_k=args.top,
+            args.query, candidates, top_k=None,
             allow_remote=args.allow_remote_ollama,
         )
         # Derive strategy from first candidate's rerank_source
         first_src = (final[0].get("rerank_source") if final else "unknown")
         strategy = f"bm25+rerank:{first_src}"
 
-    # Dedupe by page (we may have multiple chunks of the same page; collapse to best)
-    by_page = {}
-    for c in final:
-        addr = c.get("page_address")
-        if addr not in by_page or c.get("rerank_score", 0) > by_page[addr].get("rerank_score", 0):
-            by_page[addr] = c
-    deduped = list(by_page.values())
-    deduped.sort(key=lambda c: c.get("rerank_score", 0), reverse=True)
+    deduped = dedupe_candidates(final, args.top)
 
     out = {
         "query": args.query,

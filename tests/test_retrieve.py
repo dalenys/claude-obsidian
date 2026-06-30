@@ -132,6 +132,23 @@ def test_rerank_noop_when_model_missing():
         assert_eq("rerank no-op for missing model", "noop-no-model", out[0]["rerank_source"])
 
 
+def test_rerank_noop_preserves_bm25_score():
+    with unittest.mock.patch.object(rerank, "ollama_alive", return_value=(False, [])):
+        out = rerank.rerank("query", [{"chunk_id": "c-1:0", "bm25_score": 7.25}], top_k=None)
+        assert_eq("no-op uses bm25_score", 7.25, out[0]["rerank_score"])
+
+
+def test_dedupe_before_top_returns_requested_distinct_pages():
+    candidates = [
+        {"page_address": "a", "rerank_score": 9},
+        {"page_address": "a", "rerank_score": 8},
+        {"page_address": "b", "rerank_score": 7},
+    ]
+    out = retrieve.dedupe_candidates(candidates, 2)
+    assert_eq("dedupe preserves requested distinct pages", ["a", "b"],
+              [c["page_address"] for c in out])
+
+
 def test_rerank_truncates_to_top_k():
     with unittest.mock.patch.object(rerank, "ollama_alive", return_value=(False, [])):
         candidates = [{"chunk_id": f"c-{i:03}:0", "score": float(i), "path": "x"} for i in range(10)]
@@ -331,6 +348,8 @@ def main():
     test_cosine_zero_vector()
     test_rerank_noop_when_ollama_unreachable()
     test_rerank_noop_when_model_missing()
+    test_rerank_noop_preserves_bm25_score()
+    test_dedupe_before_top_returns_requested_distinct_pages()
     test_rerank_truncates_to_top_k()
     test_retrieve_exits_10_without_index()
     test_end_to_end_with_synthetic_chunks()

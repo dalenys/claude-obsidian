@@ -46,7 +46,6 @@ import fcntl
 import json
 import math
 import os
-import shutil
 import sys
 import time
 import urllib.error
@@ -195,6 +194,10 @@ def load_chunk(chunk_rel_path):
         return None
 
 
+def _source_score(candidate):
+    return float(candidate.get("bm25_score", candidate.get("score", 0.0)))
+
+
 def rerank(query, candidates, top_k=5, allow_remote=False):
     """Returns candidates list, possibly truncated to top_k, with rerank_score added.
     Falls back to input-order if ollama is unavailable (still adds rerank_source: 'noop').
@@ -204,15 +207,15 @@ def rerank(query, candidates, top_k=5, allow_remote=False):
     if not alive:
         log("ollama unreachable — no-op rerank")
         for c in candidates:
-            c["rerank_score"] = float(c.get("score", 0.0))
+            c["rerank_score"] = _source_score(c)
             c["rerank_source"] = "noop-no-ollama"
-        return candidates[:top_k]
+        return candidates if top_k is None else candidates[:top_k]
     if DEFAULT_MODEL not in models:
         log(f"model {DEFAULT_MODEL} not pulled — no-op rerank")
         for c in candidates:
-            c["rerank_score"] = float(c.get("score", 0.0))
+            c["rerank_score"] = _source_score(c)
             c["rerank_source"] = "noop-no-model"
-        return candidates[:top_k]
+        return candidates if top_k is None else candidates[:top_k]
 
     cache = load_cache()
     cache_dirty = False
@@ -221,9 +224,9 @@ def rerank(query, candidates, top_k=5, allow_remote=False):
     except Exception as e:
         log(f"query embed failed: {e}")
         for c in candidates:
-            c["rerank_score"] = float(c.get("score", 0.0))
+            c["rerank_score"] = _source_score(c)
             c["rerank_source"] = "noop-embed-error"
-        return candidates[:top_k]
+        return candidates if top_k is None else candidates[:top_k]
 
     for c in candidates:
         chunk = load_chunk(c.get("path", ""))
@@ -240,7 +243,7 @@ def rerank(query, candidates, top_k=5, allow_remote=False):
                 emb = embed_one(url, DEFAULT_MODEL, text)
             except Exception as e:
                 log(f"embed failed for {c.get('chunk_id')}: {e}")
-                c["rerank_score"] = float(c.get("score", 0.0))
+                c["rerank_score"] = _source_score(c)
                 c["rerank_source"] = "embed-error"
                 continue
             cache[cache_key] = emb
@@ -252,7 +255,7 @@ def rerank(query, candidates, top_k=5, allow_remote=False):
         save_cache(cache)
 
     ranked = sorted(candidates, key=lambda x: x.get("rerank_score", 0.0), reverse=True)
-    return ranked[:top_k]
+    return ranked if top_k is None else ranked[:top_k]
 
 
 def main():

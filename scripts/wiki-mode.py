@@ -143,6 +143,19 @@ def mint_zettel_id():
     return datetime.now(timezone.utc).strftime("%Y%m%d%H%M%S%f")
 
 
+def confined_folder(value):
+    """Return a normalized folder rooted under wiki/, or exit 4."""
+    value = str(value).replace("\\", "/")
+    path = Path(value)
+    parts = value.rstrip("/").split("/")
+    if path.is_absolute() or not parts or parts[0] != "wiki" or ".." in parts:
+        raise SystemExit(4)
+    normalized = "/".join(part for part in parts if part not in ("", "."))
+    if normalized != "wiki" and not normalized.startswith("wiki/"):
+        raise SystemExit(4)
+    return normalized + "/"
+
+
 def route_path(mode, content_type, name, cfg):
     """Return the suggested vault-relative path for new content under `mode`."""
     if content_type not in VALID_TYPES:
@@ -152,7 +165,7 @@ def route_path(mode, content_type, name, cfg):
     raw = safe_name(name)  # case + spaces preserved, but path-traversal stripped
 
     if mode == "generic":
-        g = cfg["config"]["generic"]
+        g = {k: confined_folder(v) for k, v in cfg["config"]["generic"].items()}
         mapping = {
             "source":   g["sources_folder"] + slug + ".md",
             "entity":   g["entities_folder"] + raw + ".md",  # preserve capitalization for entities
@@ -163,12 +176,13 @@ def route_path(mode, content_type, name, cfg):
         return mapping[content_type]
 
     if mode == "lyt":
-        notes = cfg["config"]["lyt"]["notes_folder"]
+        notes = confined_folder(cfg["config"]["lyt"]["notes_folder"])
         # All atomic notes flat in wiki/notes/; routing is the same regardless of type
         return notes + slug + ".md"
 
     if mode == "para":
-        p = cfg["config"]["para"]
+        p = {k: confined_folder(v) for k, v in cfg["config"]["para"].items()
+             if k.endswith("_folder")}
         mapping = {
             # New sources land in resources/<topic>/ (we use a generic 'incoming' bucket;
             # the user will sort into specific topics via their own workflow)
@@ -184,7 +198,7 @@ def route_path(mode, content_type, name, cfg):
     if mode == "zettelkasten":
         z = cfg["config"]["zettelkasten"]
         zid = mint_zettel_id()
-        return z["root_folder"] + f"{zid}-{slug}.md"
+        return confined_folder(z["root_folder"]) + f"{zid}-{slug}.md"
 
     raise SystemExit(3)
 

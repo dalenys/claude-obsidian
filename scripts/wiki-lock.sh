@@ -39,7 +39,7 @@
 #   list
 #     - Prints currently-held lock records (one per line: pid age path).
 #   clear-stale [--max-age N]
-#     - Removes lockfiles whose PID is dead OR whose age > N seconds.
+#     - Removes lockfiles whose age > N seconds. PIDs are informational only.
 #       Default N = 3600 (1h). Returns count removed via stdout.
 #       (The N=3600 default is intentionally generous because clear-stale
 #       is admin-grade cleanup, distinct from the per-acquire age threshold.)
@@ -141,11 +141,6 @@ sys.stdout.write("INSIDE" if common == root else "OUTSIDE")
 }
 
 now_epoch() { date +%s; }
-
-is_alive() {
-  # kill -0 returns 0 if process exists and we can signal it
-  kill -0 "$1" 2>/dev/null
-}
 
 # Atomic meta-lock wrapper. Funcs that mutate LOCK_DIR call under this lock so
 # acquire/release/clear-stale don't race against each other.
@@ -259,11 +254,13 @@ _cmd_clear_stale() {
     if [ -z "$rec" ]; then
       rm -f "$lf"; removed=$((removed + 1)); continue
     fi
-    local pid epoch age
-    pid=$(printf '%s' "$rec" | awk '{print $1}')
+    local epoch age
     epoch=$(printf '%s' "$rec" | awk '{print $2}')
+    case "$epoch" in
+      ''|*[!0-9]*) continue ;;
+    esac
     age=$((now - epoch))
-    if ! is_alive "$pid" || [ "$age" -gt "$max_age" ]; then
+    if [ "$age" -gt "$max_age" ]; then
       rm -f "$lf"; removed=$((removed + 1))
     fi
   done
