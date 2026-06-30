@@ -46,4 +46,4 @@ Navigation: [[index]] | [[log]] | [[overview]]
 ## Style Preferences
 
 - Short, direct responses. No trailing summaries. Parallel tool calls when independent.
-- Em-dash usage in wiki pages is currently inconsistent across the vault (see Active Threads). This file stays em-dash-free pending a decision.
+- Em dashes are allowed vault-wide (decided 2026-06-30). Write naturally; no need to avoid them.
