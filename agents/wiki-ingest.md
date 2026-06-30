@@ -70,6 +70,13 @@ bash scripts/wiki-lock.sh release wiki/sources/<slug>.md
 
 The lock semantics (age-based, 60s default stale window, cross-process release allowed) are documented in `scripts/wiki-lock.sh` and `skills/wiki-ingest/SKILL.md` §Concurrency. There is no opt-out; this is core in v1.7.
 
+After the final page lock in the assigned batch is released, complete any
+hook-deferred staging and commit:
+
+```bash
+bash scripts/auto-commit-wiki.sh
+```
+
 ## DragonScale address assignment (still single-writer at the allocator)
 
 If the vault has adopted DragonScale Mechanism 2 (detected by `[ -x ./scripts/allocate-address.sh ] && [ -d ./.vault-meta ]`):

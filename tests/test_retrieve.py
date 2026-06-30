@@ -242,6 +242,50 @@ def test_end_to_end_with_synthetic_chunks():
         assert_eq("top hit is c-000001", "c-000001", first["page_address"])
 
 
+def test_cli_deduplicates_pages_before_top_limit():
+    """Duplicate top chunks from one page must not consume both result slots."""
+    import hashlib
+    import shutil
+
+    with tempfile.TemporaryDirectory() as tmpdir:
+        sandbox = Path(tmpdir)
+        (sandbox / "scripts").mkdir()
+        chunks_dir = sandbox / ".vault-meta" / "chunks"
+        (sandbox / ".vault-meta" / "bm25").mkdir(parents=True)
+        for filename in ("retrieve.py", "bm25-index.py", "rerank.py"):
+            shutil.copy(ROOT / "scripts" / filename, sandbox / "scripts" / filename)
+        fixtures = [
+            ("c-000001", 0, "needle needle needle alpha"),
+            ("c-000001", 1, "needle needle needle beta"),
+            ("c-000002", 0, "needle gamma"),
+        ]
+        for address, index, text in fixtures:
+            target = chunks_dir / address
+            target.mkdir(parents=True, exist_ok=True)
+            record = {
+                "page_path": f"wiki/{address}.md",
+                "page_address": address,
+                "chunk_index": index,
+                "raw_text": text,
+                "contextualized_text": text,
+                "body_hash": hashlib.sha256(text.encode()).hexdigest(),
+            }
+            (target / f"chunk-{index:03d}.json").write_text(json.dumps(record))
+        subprocess.run(
+            [sys.executable, str(sandbox / "scripts/bm25-index.py"), "build"],
+            check=True, capture_output=True, text=True,
+        )
+        result = subprocess.run(
+            [sys.executable, str(sandbox / "scripts/retrieve.py"), "needle",
+             "--top", "2", "--bm25-top", "3", "--no-rerank"],
+            capture_output=True, text=True, timeout=10,
+        )
+        assert_eq("duplicate-page CLI retrieve rc=0", 0, result.returncode)
+        output = json.loads(result.stdout)
+        assert_eq("CLI returns two distinct pages", ["c-000001", "c-000002"],
+                  [item["page_address"] for item in output["candidates"]])
+
+
 # ─── M8 closure: --explain and --no-rerank flag coverage ─────────────────────
 def test_explain_flag_adds_diagnostics_block():
     """v1.7.2 / closes audit M8: --explain must include an 'explain' diagnostics block."""
@@ -353,6 +397,7 @@ def main():
     test_rerank_truncates_to_top_k()
     test_retrieve_exits_10_without_index()
     test_end_to_end_with_synthetic_chunks()
+    test_cli_deduplicates_pages_before_top_limit()
     test_explain_flag_adds_diagnostics_block()
     test_no_rerank_flag_strategy_bm25_only()
     print("\nAll retrieve tests passed.")

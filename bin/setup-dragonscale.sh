@@ -100,7 +100,7 @@ fi
 echo ""
 echo "Sanity checks:"
 NEXT=$(./scripts/allocate-address.sh --peek 2>&1 | tail -1)
-echo "  next address: c-$(printf '%06d' $NEXT)"
+echo "  next address: c-$(printf '%06d' "$NEXT")"
 
 PYTHON=$(command -v python3 || echo "not installed")
 echo "  python3:      $PYTHON"

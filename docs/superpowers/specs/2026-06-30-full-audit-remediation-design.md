@@ -64,4 +64,3 @@ commands, preferring `shasum -a 256` on macOS.
 Each defect receives a regression test that fails against the baseline. Final
 verification consists of targeted regression suites, `make test`, ShellCheck,
 Ruff, JSON/frontmatter validation, and inspection of the complete branch diff.
-

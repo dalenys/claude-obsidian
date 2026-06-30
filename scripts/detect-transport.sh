@@ -115,10 +115,14 @@ CLI_PRESENT=false
 CLI_BINARY=""
 CLI_VERSION_RAW=""
 cli_capable() {
-  local help
-  help="$("$1" --help 2>/dev/null || true)"
-  for command in read write append search; do
-    printf '%s\n' "$help" | grep -q "$command" || return 1
+  local binary="$1"
+  local command
+  for command in read write append search daily:today daily:append property:set \
+                 backlinks bases tags bookmarks; do
+    if ! "$binary" "$command" --help >/dev/null 2>&1 &&
+       ! "$binary" help "$command" >/dev/null 2>&1; then
+      return 1
+    fi
   done
 }
 if command -v obsidian-cli >/dev/null 2>&1 && cli_capable obsidian-cli; then

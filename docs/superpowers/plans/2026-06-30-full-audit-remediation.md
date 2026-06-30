@@ -161,4 +161,3 @@ fi
   the Excalidraw hardening item. Any uncovered item keeps the verdict at HOLD.
 - [ ] Commit cohesive slices with no generated artifacts or user workspace
   state.
-
