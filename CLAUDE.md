@@ -29,6 +29,12 @@ Run `/wiki` to scaffold a new vault or check setup status.
 
 Run "lint the wiki" every 10-15 ingests to catch orphans and gaps.
 
+## Git and Pull Requests
+
+- Create pull requests only from and against the repository configured as `origin` (the user's fork).
+- Do not push branches to, create pull requests against, or otherwise publish changes to the upstream/original repository unless the user explicitly authorizes that specific upstream action.
+- References to the public canonical upstream repository are informational and do not grant permission to publish there.
+
 ## Cross-Project Access
 
 To reference this wiki from another Claude Code project, add to that project's CLAUDE.md:

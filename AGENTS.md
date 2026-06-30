@@ -46,6 +46,12 @@ bash bin/setup-multi-agent.sh
 - **Generated knowledge**: `wiki/` (agent-owned, links to sources via wikilinks)
 - **Manifest**: `.raw/.manifest.json` tracks ingested sources (delta tracking)
 
+## Git and Pull Requests
+
+- Create pull requests only from and against the repository configured as `origin` (the user's fork).
+- Do not push branches to, create pull requests against, or otherwise publish changes to the upstream/original repository unless the user explicitly authorizes that specific upstream action.
+- References to the public canonical upstream repository are informational and do not grant permission to publish there.
+
 ## Bootstrap
 
 When the user opens this project for the first time:
