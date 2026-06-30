@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(git push *upstream*)",
+      "Bash(git * push *upstream*)",
+      "Bash(git push *AgriciDaniel/claude-obsidian*)",
+      "Bash(git * push *AgriciDaniel/claude-obsidian*)",
+      "Bash(gh *pr create *AgriciDaniel/claude-obsidian*)",
+      "Bash(gh *AgriciDaniel/claude-obsidian* *pr create*)",
+      "Bash(gh *pr new *AgriciDaniel/claude-obsidian*)",
+      "Bash(gh *AgriciDaniel/claude-obsidian* *pr new*)"
+    ]
+  }
+}
