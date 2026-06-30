@@ -4,17 +4,21 @@
     "type": "split",
     "children": [
       {
-        "id": "477f1cf965ca606e",
+        "id": "87137daa5059f4ac",
         "type": "tabs",
         "children": [
           {
-            "id": "a31de1b302cdc5cf",
+            "id": "8d334833de7ec3cc",
             "type": "leaf",
             "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "Graph view"
+              "type": "markdown",
+              "state": {
+                "file": "CLAUDE.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "CLAUDE"
             }
           }
         ]
@@ -183,9 +187,34 @@
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-excalidraw-plugin:New drawing": false,
+      "obsidian-memos:Thino": false,
+      "obsidian-memos:Thino Super": false,
+      "templater-obsidian:Templater": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "a31de1b302cdc5cf",
-  "lastOpenFiles": []
+  "active": "8d334833de7ec3cc",
+  "lastOpenFiles": [
+    "scripts/__pycache__/contextual-prefix.cpython-312.pyc",
+    "scripts/__pycache__/wiki-mode.cpython-312.pyc",
+    "scripts/__pycache__/rerank.cpython-312.pyc",
+    "scripts/__pycache__/retrieve.cpython-312.pyc",
+    "scripts/__pycache__/bm25-index.cpython-312.pyc",
+    "scripts/__pycache__/boundary-score.cpython-312.pyc",
+    "scripts/__pycache__/tiling-check.cpython-312.pyc",
+    "scripts/__pycache__",
+    "wiki/meta/2026-06-30-v1.7-v1.9.2-release-arc.md",
+    "wiki/references/single-tenant-threat-model.md",
+    "wiki/concepts/10-Principle Thinking Framework.md",
+    "wiki/concepts/Multi-Writer Safety.md",
+    "wiki/concepts/Contextual Retrieval.md",
+    "wiki/concepts/Methodology Modes.md",
+    "CODE_OF_CONDUCT.md",
+    "PRIVACY.md",
+    "SECURITY.md",
+    "WIKI.md",
+    "assets/diagrams/hybrid-retrieval.svg"
+  ]
 }
