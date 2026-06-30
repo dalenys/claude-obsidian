@@ -39,8 +39,8 @@ Navigation: [[index]] | [[log]] | [[overview]]
 ## Active Threads
 
 - **Fixed this session**: the `flock` portability bug — both `allocate-address.sh` and `wiki-lock.sh`'s meta-lock failed on macOS (no `flock`) — is fixed via an atomic-`mkdir` spinlock fallback; full `make test` is now green on macOS. This session's pages were hand-allocated `c-000003`..`c-000007` before the fix.
-- **Git drift**: `.obsidian/` config + 3 untracked plugin folders (dataview, obsidian-git, templater) uncommitted.
-- **Style-preference conflict**: this file's old style note banned em dashes, but DragonScale, the references, and CHANGELOG all use them. Unresolved; user to decide.
+- **Resolved 2026-06-30**: em-dash style — vault now **allows em dashes** vault-wide (matches DragonScale, references, CHANGELOG). The old ban is dropped; no rewriting needed.
+- **Resolved 2026-06-30**: git drift — committed the `.obsidian/` config + 3 plugin folders (dataview, obsidian-git, templater) so the environment is reproducible.
 - **DragonScale**: all four mechanisms shipped (opt-in), counter at 8 after this session.
 
 ## Style Preferences
