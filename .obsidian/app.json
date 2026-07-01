@@ -1,7 +1,6 @@
 {
   "userIgnoreFilters": [
     "agents/",
-    "commands/",
     "hooks/",
     "skills/",
     "_templates/",

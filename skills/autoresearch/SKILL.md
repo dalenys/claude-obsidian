@@ -90,6 +90,8 @@ After all pages in a research pass are written and every lock is released, run
 
 ## Before Starting
 
+If no wiki vault is set up yet (no `wiki/` folder and no configured personal-vault root), tell the user: "No wiki vault found. Run /wiki first to set one up." and stop before searching.
+
 Read `references/program.md` to load the research objectives and constraints. This file is user-configurable. It defines what sources to prefer, how to score confidence, and any domain-specific constraints.
 
 ---

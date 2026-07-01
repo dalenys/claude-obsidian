@@ -481,7 +481,6 @@ claude-obsidian/
 │   ├── verifier.md              # pre-commit audit agent (v1.7.1+)
 │   ├── wiki-ingest.md           # parallel batch ingestion agent
 │   └── wiki-lint.md             # health check agent
-├── commands/                     # slash command entry points
 ├── hooks/
 │   └── hooks.json               # SessionStart + Stop + PostToolUse hooks
 ├── scripts/                      # 12 helper scripts (transport, locking, retrieval, etc.)
