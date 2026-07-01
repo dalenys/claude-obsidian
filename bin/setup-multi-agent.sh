@@ -38,7 +38,8 @@ link_if_missing() {
   mkdir -p "$(dirname "$dest")"
 
   if [ -L "$dest" ]; then
-    local existing="$(readlink "$dest")"
+    local existing
+    existing="$(readlink "$dest")"
     if [ "$existing" = "$target" ]; then
       echo -e "${GRAY}[$agent_name] already linked: $dest${NC}"
       return

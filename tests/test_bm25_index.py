@@ -11,10 +11,6 @@ Usage:
 import importlib.util
 import json
 import math
-import os
-import shutil
-import subprocess
-import sys
 import tempfile
 from pathlib import Path
 
@@ -239,8 +235,6 @@ def test_idf_smoothing():
 def test_cli_stats_on_missing_index():
     """The CLI should exit 3 (EXIT_INDEX_MISSING) when no index exists."""
     with tempfile.TemporaryDirectory() as tmpdir:
-        # Run in a subprocess with a fresh cwd and zeroed META_DIR
-        env = dict(os.environ)
         # We can't easily redirect bm25's hard-coded paths from outside without
         # rewriting the script. Instead: smoke-test the exit code path by
         # invoking the module-level load_index() in a context where the index

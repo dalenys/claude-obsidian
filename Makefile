@@ -2,7 +2,8 @@
 # Test runner entry points for DragonScale and vault tooling.
 
 .PHONY: test test-address test-tiling test-boundary test-bm25 test-retrieve \
-        test-lock test-concurrent test-mode test-contextual test-install-transport setup-dragonscale \
+        test-lock test-concurrent test-mode test-contextual test-install-transport \
+        test-version-sync test-secrets lint check-secrets setup-dragonscale \
         setup-retrieve setup-mode clean-test-state help
 
 help:
@@ -17,12 +18,16 @@ help:
 	@echo "  make test-concurrent  multi-writer correctness gate (shell, hermetic)"
 	@echo "  make test-mode        scripts/wiki-mode.py tests (python, hermetic)"
 	@echo "  make test-contextual  scripts/contextual-prefix.py cache-floor tests (python, hermetic)"
+	@echo "  make test-version-sync Assert version agrees across plugin.json/marketplace.json/CHANGELOG"
+	@echo "  make test-secrets     tests/test_check_no_secrets.sh (shell, hermetic)"
+	@echo "  make lint             Run shellcheck + ruff (skipped if not installed)"
+	@echo "  make check-secrets    Scan tracked files for secrets/host paths (no third-party tools)"
 	@echo "  make setup-dragonscale Run bin/setup-dragonscale.sh against this vault"
 	@echo "  make setup-retrieve   Run bin/setup-retrieve.sh against this vault (opt-in v1.7)"
 	@echo "  make setup-mode       Run bin/setup-mode.sh to pick a methodology mode (opt-in v1.8)"
 	@echo "  make clean-test-state Remove runtime lockfiles and tiling/embed caches"
 
-test: test-address test-tiling test-boundary test-bm25 test-retrieve test-lock test-concurrent test-mode test-contextual test-install-transport
+test: test-address test-tiling test-boundary test-bm25 test-retrieve test-lock test-concurrent test-mode test-contextual test-install-transport test-version-sync test-secrets
 	@echo ""
 	@echo "All tests passed."
 
@@ -65,6 +70,33 @@ test-contextual:
 test-install-transport:
 	@echo "=== test_install_transport.sh ==="
 	@bash tests/test_install_transport.sh
+
+test-version-sync:
+	@echo "=== test_check_version_sync.py ==="
+	@python3 tests/test_check_version_sync.py
+	@echo "=== check-version-sync.py (live repo) ==="
+	@python3 scripts/check-version-sync.py
+
+test-secrets:
+	@echo "=== test_check_no_secrets.sh ==="
+	@bash tests/test_check_no_secrets.sh
+
+# Opt-in static analysis. Both tools are dev-only (not runtime deps); the target
+# skips gracefully when a tool is absent so `make test` never depends on them.
+# Runs both linters even if the first fails, then reports a single exit status.
+lint:
+	@echo "=== lint: shellcheck + ruff ==="
+	@rc=0; \
+	if command -v shellcheck >/dev/null 2>&1; then \
+	  shellcheck scripts/*.sh bin/*.sh tests/*.sh && echo "shellcheck: OK" || rc=1; \
+	else echo "shellcheck: not installed — skipping (brew install shellcheck)"; fi; \
+	if command -v ruff >/dev/null 2>&1; then \
+	  ruff check scripts tests && echo "ruff: OK" || rc=1; \
+	else echo "ruff: not installed — skipping (pipx install ruff)"; fi; \
+	exit $$rc
+
+check-secrets:
+	@bash scripts/check-no-secrets.sh
 
 setup-dragonscale:
 	@bash bin/setup-dragonscale.sh

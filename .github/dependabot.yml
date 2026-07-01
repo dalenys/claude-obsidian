@@ -1,0 +1,17 @@
+# Dependabot — scoped to GitHub Actions only.
+#
+# The plugin ships zero third-party RUNTIME dependencies (stdlib-only Python,
+# raw urllib for the Anthropic API), so there is no pip/npm ecosystem to track.
+# The one moving supply-chain surface is the pinned actions in
+# .github/workflows/ (actions/checkout, actions/setup-python). This keeps those
+# patched without any ongoing manual effort.
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: "/"
+    schedule:
+      interval: weekly
+    commit-message:
+      prefix: chore
+    labels:
+      - dependencies

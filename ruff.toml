@@ -1,0 +1,14 @@
+# ruff.toml — Python linter config. CI/dev-only; NOT a runtime dependency.
+# The plugin ships stdlib-only Python (the Anthropic API is called via raw
+# urllib, no SDK); ruff runs only in CI and via `make lint`.
+#
+# Rule set is intentionally close to ruff's default (pyflakes + a safe slice of
+# pycodestyle) plus import-sorting, to catch real defects (undefined names,
+# unused imports, bare `except`) without style churn. Line-length (E501) is
+# deliberately NOT enforced — docstrings and diagram comments run long by design.
+
+target-version = "py311"
+line-length = 100
+
+[lint]
+select = ["E4", "E7", "E9", "F", "I"]

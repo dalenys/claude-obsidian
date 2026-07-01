@@ -9,9 +9,13 @@ on:
 
 jobs:
   test:
-    name: Hermetic test suite
-    runs-on: ubuntu-latest
+    name: Hermetic test suite (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 5
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
 
     steps:
       - name: Checkout
@@ -25,8 +29,10 @@ jobs:
       - name: Verify Python version
         run: python3 --version
 
-      - name: Verify Bash + GNU coreutils
-        run: bash --version && date --version | head -1
+      - name: Verify Bash + date (portable; macOS ships BSD date without --version)
+        run: |
+          bash --version | head -1
+          date +%Y-%m-%d
 
       - name: Make scripts executable
         run: chmod +x scripts/*.sh scripts/*.py bin/*.sh tests/*.sh 2>/dev/null || true
@@ -45,9 +51,9 @@ jobs:
         run: bash scripts/detect-transport.sh --peek | python3 -m json.tool > /dev/null
 
   lint-skills:
-    name: Skill frontmatter validation
+    name: Lint, static analysis + manifest validation
     runs-on: ubuntu-latest
-    timeout-minutes: 2
+    timeout-minutes: 4
 
     steps:
       - name: Checkout
@@ -60,6 +66,20 @@ jobs:
 
       - name: Install PyYAML
         run: pip install pyyaml
+
+      - name: Static analysis — shellcheck (preinstalled on ubuntu runners)
+        run: shellcheck scripts/*.sh bin/*.sh tests/*.sh
+
+      - name: Static analysis — ruff
+        run: |
+          pip install ruff==0.15.1
+          ruff check scripts tests
+
+      - name: Version sync across manifests + CHANGELOG
+        run: python3 scripts/check-version-sync.py
+
+      - name: Secret / host-path scan (tracked files)
+        run: bash scripts/check-no-secrets.sh
 
       - name: Validate every SKILL.md has valid YAML frontmatter
         run: |

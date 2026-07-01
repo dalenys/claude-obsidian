@@ -19,7 +19,6 @@ import argparse
 import json
 import re
 import subprocess
-import sys
 from pathlib import Path
 
 VAULT_ROOT = Path(__file__).resolve().parent.parent
@@ -186,7 +185,7 @@ def main():
     print("-" * 80)
     print(f"{'TOTAL':<16} {total_n:>4} {pct(total_v17_t1, total_n):>10} {pct(total_v17_t5, total_n):>10} {pct(total_v16_t1, total_n):>10} {pct(total_v16_t5, total_n):>10}  {delta_total:+6.1f}pp")
     print()
-    print(f"Plan §7 ship-gate target: ≥30 percentage-point improvement in top-1")
+    print("Plan §7 ship-gate target: ≥30 percentage-point improvement in top-1")
     print(f"Actual: {delta_total:+.1f}pp ({'PASS' if delta_total >= 30 else 'INFO'} — pp gain alone, not failure-reduction %)")
     # Also compute as a relative reduction in "wrong page cited" errors
     v17_wrong = total_n - total_v17_t1
