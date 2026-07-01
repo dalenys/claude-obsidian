@@ -81,6 +81,16 @@ If the user specifies a type, use that. If not, pick the best fit based on the c
 
 ## Save Workflow
 
+**Preflight:** If no wiki vault is set up yet (no `wiki/` folder and no configured personal-vault root), tell the user: "No wiki vault found. Run /wiki first to set one up." and stop.
+
+**Usage:**
+
+- `/save` — analyze the full conversation and save the most valuable content
+- `/save [name]` — save with a specific note title (skip the naming question)
+- `/save session` — save a complete session summary
+- `/save concept [name]` — explicitly save as a concept page
+- `/save decision [name]` — explicitly save as a decision record
+
 **Step 0: Decide the destination root.** Check in order:
 
 1. **User explicit override.** If the user said "save to this project's wiki" / "save to the personal vault" / a specific path, respect it.

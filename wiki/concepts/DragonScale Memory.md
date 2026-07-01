@@ -200,7 +200,7 @@ Adversarial review flagged these gaps in v0.1. Each must be decided before the c
 | Fold operator | shipped (Phase 1, dry-run verified) | `skills/wiki-fold/` | reads `log.md`, writes `wiki/folds/`, updates `index.md` on commit |
 | Address anchors | shipped (Phase 2, opt-in) | `scripts/allocate-address.sh`, new frontmatter field | `wiki-ingest` (assignment), `wiki-lint` (validation) |
 | Semantic tiling | shipped (Phase 2/3, opt-in) | `scripts/tiling-check.py`, `.vault-meta/tiling-thresholds.json` | `wiki-lint` with banded thresholds, calibration procedure documented |
-| Boundary-first | shipped (Phase 4, opt-in) | `scripts/boundary-score.py`, `tests/test_boundary_score.py` | `skills/autoresearch/SKILL.md` Topic Selection section B; `commands/autoresearch.md` no-topic path |
+| Boundary-first | shipped (Phase 4, opt-in) | `scripts/boundary-score.py`, `tests/test_boundary_score.py` | `skills/autoresearch/SKILL.md` Topic Selection section B (no-topic path) |
 
 The existing hot → index → domain → page hierarchy already implements self-similarity across scales. That's the one dragon-curve property this vault had before DragonScale.
 

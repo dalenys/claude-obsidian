@@ -15,8 +15,13 @@ Engineering-practice hardening: CI-only / stdlib-only guardrails that catch the 
 - **Dependabot** (`.github/dependabot.yml`), scoped to `github-actions` only (no runtime deps to track), to keep pinned actions patched weekly.
 - **Makefile targets**: `make lint` (shellcheck + ruff, skipped when absent), `make check-secrets`, `make test-version-sync`.
 
+### Removed
+
+- **`commands/` directory** (`wiki.md`, `save.md`, `canvas.md`, `autoresearch.md`). These four thin launchers duplicated the same-named skills and, because Claude Code surfaces both plugin commands and plugin skills into the `/` slash namespace, collided on the bare slug — suppressing `/wiki`, `/save`, `/canvas`, `/autoresearch` in favor of only the fully-qualified `/claude-obsidian:<name>`. Their unique guardrails were folded into the matching `SKILL.md` first (Obsidian/vault/MCP preflight → `wiki`; "run /wiki first" → `save`, `autoresearch`; `canvas` was already fully covered). The now-dead `commands/` entry was also dropped from the Obsidian `userIgnoreFilters` (`bin/setup-vault.sh`, `.obsidian/app.json`) and the README directory tree.
+
 ### Fixed
 
+- **Bare slash commands `/wiki`, `/save`, `/canvas`, `/autoresearch` restored.** They were shadowed by the command/skill name collision described under _Removed_; each skill now owns its bare slug again (like `/wiki-ingest`), matching what the README advertises. The skill-only sub-commands (`/wiki-ingest`, `/wiki-query`, …) were never affected, which is why only these four went missing.
 - **Latent lint findings across pre-existing scripts**, surfaced by the new gates: removed dead imports / an unused local / a placeholderless f-string (ruff F401/F541/F841/E741/E702 in `benchmark-runner.py`, `rerank.py`, and four test files); split `local x="$(...)"` to stop masking command exit codes under `set -e` (shellcheck SC2155 in `wiki-lock.sh`, `setup-multi-agent.sh`, `test_concurrent_write.sh`); quoted a `printf` argument (SC2086); dropped an unused local (SC2034). Behavior unchanged — full suite green on both macOS and Linux.
 
 ### Documented

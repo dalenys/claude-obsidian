@@ -82,7 +82,6 @@ cat > "$APP_TMP" << 'EOF'
 {
   "userIgnoreFilters": [
     "agents/",
-    "commands/",
     "hooks/",
     "skills/",
     "_templates/",

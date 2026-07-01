@@ -111,6 +111,27 @@ Route to the correct operation based on what the user says:
 
 ---
 
+## Setup & Status Check (the `/wiki` entry flow)
+
+When invoked as `/wiki` (setup or status, rather than a specific operation above), run these preflight checks before scaffolding:
+
+1. **Obsidian installed?** If not, offer to install it (see `references/plugins.md`).
+2. **Vault present?** Look for a `.obsidian/` folder. If found, report the current vault state.
+3. **MCP configured?** Run `claude mcp list`. If the vault MCP server is absent, ask whether to set it up.
+4. **Already set up?** If a vault exists, skip scaffolding — check `hot.md` and `log.md` for what was ingested recently and offer to continue where things left off.
+5. **Fresh vault?** Otherwise, ask "What is this vault for?" then proceed to the SCAFFOLD Operation below. Examples of what the user might say:
+   - "Map the architecture of github.com/org/repo"
+   - "Build a sitemap and content analysis for example.com"
+   - "Track my SaaS business — product, customers, metrics, roadmap"
+   - "Research project on [topic] — papers, concepts, open questions"
+   - "Personal second brain — health, goals, learning, projects"
+   - "Organize my YouTube channel — transcripts, topics, tools mentioned"
+   - "Executive assistant brain — meetings, tasks, business context"
+
+   Don't ask more questions — scaffold, show what was created, and ask "Want to adjust anything before we start?"
+
+---
+
 ## SCAFFOLD Operation
 
 Trigger: user describes what the vault is for.
