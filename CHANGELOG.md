@@ -4,7 +4,9 @@ All notable changes to claude-obsidian. Format: [Keep a Changelog](https://keepa
 
 ## [Unreleased]
 
-Engineering-practice hardening: CI-only / stdlib-only guardrails that catch the class of bug that shipped in v1.9.2 (a macOS-only `flock` regression caught by hand, not CI). No new runtime dependencies.
+## [1.9.3] - 2026-07-01 (CI/engineering-practice guardrails + slash-command collision fix)
+
+Engineering-practice hardening: CI-only / stdlib-only guardrails that catch the class of bug that shipped in v1.9.2 (a macOS-only `flock` regression caught by hand, not CI), plus a fix for the plugin command/skill name collision that was suppressing the bare `/wiki`, `/save`, `/canvas`, `/autoresearch` slash commands. No new runtime dependencies.
 
 ### Added
 
