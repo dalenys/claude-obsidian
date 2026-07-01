@@ -1,0 +1,6 @@
+# .shellcheckrc — shellcheck defaults for this repo. CI/dev-only; not a runtime dep.
+#
+# Do not follow `source`d files: the scripts source paths that are only known at
+# runtime (vault-relative), so static source-following would emit false "file not
+# found" (SC1091) noise. Each script is linted in isolation.
+external-sources=false

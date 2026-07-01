@@ -2,6 +2,27 @@
 
 All notable changes to claude-obsidian. Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioning: [SemVer](https://semver.org/).
 
+## [Unreleased]
+
+Engineering-practice hardening: CI-only / stdlib-only guardrails that catch the class of bug that shipped in v1.9.2 (a macOS-only `flock` regression caught by hand, not CI). No new runtime dependencies.
+
+### Added
+
+- **macOS CI lane** (`.github/workflows/test.yml`). The `test` job now runs on a `[ubuntu-latest, macos-latest]` matrix (`fail-fast: false`), so BSD / no-`flock` regressions — exactly the class fixed in `9eebeae` — fail CI instead of shipping. The GNU-only `date --version` smoke step is replaced with a portable one (macOS ships BSD `date`).
+- **Static analysis in CI** — shellcheck (preinstalled on the runner) over `scripts/ bin/ tests/`, and ruff (`ruff.toml`, pinned to `0.15.1`) over `scripts tests`. Both are dev-only tools; neither is a runtime dependency.
+- **Version-sync guard** (`scripts/check-version-sync.py`, pure stdlib) + hermetic test (`tests/test_check_version_sync.py`). Asserts one version across `plugin.json`, `marketplace.json` (metadata + every plugin entry), and the top `CHANGELOG.md` heading; `--check-tag` also gates the latest git tag. Wired into `make test` (now 11 suites) and CI. Automates the manual `chore(vN)` sync ritual (audit finding M16).
+- **Secret / host-path scan** (`scripts/check-no-secrets.sh` + `.secretsignore`). `git grep` over tracked files for private-key headers, absolute home paths (the real leak vector), and API-key shapes; placeholder forms are allow-listed, and each hit is checked independently so a real leak beside a placeholder is still caught. Automates the manual host-path/handle grep the audits run by hand. Wired into CI, `make check-secrets`, and a hermetic test (`tests/test_check_no_secrets.sh`).
+- **Dependabot** (`.github/dependabot.yml`), scoped to `github-actions` only (no runtime deps to track), to keep pinned actions patched weekly.
+- **Makefile targets**: `make lint` (shellcheck + ruff, skipped when absent), `make check-secrets`, `make test-version-sync`.
+
+### Fixed
+
+- **Latent lint findings across pre-existing scripts**, surfaced by the new gates: removed dead imports / an unused local / a placeholderless f-string (ruff F401/F541/F841/E741/E702 in `benchmark-runner.py`, `rerank.py`, and four test files); split `local x="$(...)"` to stop masking command exit codes under `set -e` (shellcheck SC2155 in `wiki-lock.sh`, `setup-multi-agent.sh`, `test_concurrent_write.sh`); quoted a `printf` argument (SC2086); dropped an unused local (SC2034). Behavior unchanged — full suite green on both macOS and Linux.
+
+### Documented
+
+- `CONTRIBUTING.md`: the pre-PR flow now lists `make lint` + `make check-secrets`; suite count 9 → 10; notes the Linux + macOS CI matrix and that the lint tools add no runtime dependency.
+
 ## [1.9.2] - 2026-05-27 (prompt-cache hardening + path-handling robustness)
 
 Ports Anthropic prompt-caching best practices into the **one** place the plugin calls the Anthropic API directly: tier-1 contextual-prefix generation in `scripts/contextual-prefix.py`. Verified by full-repo sweep that `cache_control` and the Anthropic API surface exist nowhere else (incl. `claude-canvas/`). No change to retrieval output — API payload shape + observability only.

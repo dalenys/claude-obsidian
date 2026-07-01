@@ -54,6 +54,7 @@ bash bin/setup-mode.sh
 ### 4. Make the change
 
 Follow the six-cut kernel:
+
 - Read every file you're touching
 - Name new identifiers like the next reader is hostile
 - Smallest unit that works
@@ -61,15 +62,19 @@ Follow the six-cut kernel:
 - Evidence over intuition (tests for new behavior)
 - Failure-mode + undo plan documented
 
-If you add a new skill, agent, script, or hook, also add a test under `tests/`. The 9 hermetic test suites are the project's safety net.
+If you add a new skill, agent, script, or hook, also add a test under `tests/`. The 11 hermetic test suites are the project's safety net.
 
-### 5. Run the tests
+### 5. Run the tests, lint, and secret scan
 
 ```bash
-make test
+make test          # 11 hermetic suites (incl. version-sync + secret-scan); required before a PR
+make lint          # shellcheck + ruff — skipped gracefully if a tool is absent
+make check-secrets # scan tracked files for secrets / host paths
 ```
 
-All 9 suites must pass (~1240 assertions). Tests are hermetic: no network, no ollama, no Anthropic API. If your change adds a network call, gate it behind a `--consent`/`--allow-egress`/env-var pattern matching `scripts/contextual-prefix.py` or `scripts/tiling-check.py`.
+All 11 suites must pass. Tests are hermetic: no network, no ollama, no Anthropic API. If your change adds a network call, gate it behind a `--consent`/`--allow-egress`/env-var pattern matching `scripts/contextual-prefix.py` or `scripts/tiling-check.py`.
+
+`make lint` and `make check-secrets` are optional locally but **enforced in CI** on every PR, alongside a version-sync gate across `plugin.json`, `marketplace.json`, and `CHANGELOG.md`. The test job runs on both Linux and macOS. shellcheck and ruff are dev-only tools — they add no runtime dependency.
 
 ### 6. Run the verifier (optional but recommended)
 
@@ -95,6 +100,7 @@ Commit message convention (Conventional Commits):
 Types: `feat`, `fix`, `docs`, `chore`, `refactor`, `test`, `perf`, `style`.
 
 Example:
+
 ```
 fix(wiki-mode): close path-traversal in route_path safe_name
 
@@ -111,9 +117,11 @@ Add an entry under `## [Unreleased]` (create the section if needed). Follow the 
 ## [Unreleased]
 
 ### Added
+
 - Description of new feature
 
 ### Fixed
+
 - Description of bug fix
 ```
 
@@ -122,6 +130,7 @@ The maintainer will move your entry to a versioned section at release time.
 ### 9. Open a PR
 
 Use the PR template. Required fields:
+
 - What changed
 - Why
 - How it was tested (paste `make test` output if relevant)

@@ -193,8 +193,8 @@ def test_safe_name_strips_path_separators():
 
 def test_route_path_blocks_traversal_for_generic_entity_and_concept():
     """The end-to-end route must not allow the returned path to escape vault root."""
-    import os
-    cfg = dict(wm.DEFAULT_CONFIG); cfg["mode"] = "generic"
+    cfg = dict(wm.DEFAULT_CONFIG)
+    cfg["mode"] = "generic"
     vault = os.path.abspath(".")
     for content_type, malicious in [
         ("entity",  "../../../etc/passwd"),
@@ -209,8 +209,8 @@ def test_route_path_blocks_traversal_for_generic_entity_and_concept():
 
 
 def test_route_path_blocks_traversal_for_para_entity_and_concept():
-    import os
-    cfg = dict(wm.DEFAULT_CONFIG); cfg["mode"] = "para"
+    cfg = dict(wm.DEFAULT_CONFIG)
+    cfg["mode"] = "para"
     vault = os.path.abspath(".")
     for content_type, malicious in [
         ("entity",  "../../../etc/passwd"),
@@ -332,7 +332,7 @@ def test_cli_templates_lists_six():
         capture_output=True, text=True, timeout=5,
     )
     assert_eq("cli templates rc=0", 0, result.returncode)
-    lines = [l for l in result.stdout.strip().split("\n") if l]
+    lines = [ln for ln in result.stdout.strip().split("\n") if ln]
     assert_eq("cli templates returns 6 paths", 6, len(lines))
 
 
