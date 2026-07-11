@@ -28,6 +28,18 @@ Last updated: 2026-06-30 | Total pages: 40 | Sources ingested: 3 (2 .raw files +
 
 Navigation: [[overview]] | [[log]] | [[hot]] | [[dashboard]] | [[Wiki Map]] | [[getting-started]]
 
+Vault mode: **LYT** — navigate by Maps of Content below; new pages file into `wiki/notes/`.
+
+---
+
+## Maps of Content
+
+- [[claude-obsidian-moc]] — **home MOC**; start here, then follow a sub-MOC
+  - [[wiki-pattern-moc]] — core compound-vault architecture
+  - [[retrieval-moc]] — retrieval strategy + wiki-vs-RAG argument
+  - [[release-features-moc]] — the v1.7–v1.9 feature arc
+  - [[ecosystem-moc]] — competitors, prior art, people, SEO
+
 ---
 
 ## Concepts
