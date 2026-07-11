@@ -12,6 +12,7 @@ related:
   - "[[hot]]"
   - "[[dashboard]]"
   - "[[Wiki Map]]"
+  - "[[claude-obsidian-moc]]"
   - "[[concepts/_index]]"
   - "[[entities/_index]]"
   - "[[sources/_index]]"
