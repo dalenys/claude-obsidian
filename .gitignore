@@ -49,7 +49,9 @@ secrets.y*ml
 auth.json
 
 # Personal files dropped into vault root by Obsidian (don't commit these)
-WIKI*.md
+# Anchored to root — unanchored WIKI*.md caught wiki/mocs/wiki-*-moc.md on
+# case-insensitive filesystems (macOS git core.ignorecase=true).
+/WIKI*.md
 PROMPT.md
 Welcome.md
 *.tmp.*
